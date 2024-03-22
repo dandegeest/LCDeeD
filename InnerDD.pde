@@ -8,8 +8,8 @@ class InnerDD {
   
   void reset(int numP) {
     color[] colors = new color[2];
-    colors[0] = neon;
-    colors[1] = poiple;
+    colors[0] = neonDD;
+    colors[1] = reDD;
     
     curlSpan = int(random(50, 100));
     particles.clear();

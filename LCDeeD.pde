@@ -17,13 +17,19 @@ String[] lyric;
 
 TimerFunction timerFn;
 
-color poiple = color(30, 20, 60);
-color pink1 = color(255, 192, 203);
-color pink2 = color(255, 105, 180);
-color neon = color(255, 105, 180);
-color neon2 = color(255, 20, 147);
+color reDD = color(222, 0, 0);
+color greenDD = color(0, 222, 0);
+color blueDD = color(0, 0, 222);
+color whiteDD = color(222, 222, 222);
+color black = color(0);
+color yellowDD = color(222, 222, 0);
+color purpleDD = color(30, 20, 60);
+color pinkDD = color(255, 192, 203);
+color pinkDD2 = color(255, 105, 180);
+color neonDD = color(255, 105, 180);
+color neonDD2 = color(255, 20, 147);
 
-color bgColor = poiple;
+color bgColor = purpleDD;
 
 // Buffer
 PGraphics backBuffer;
@@ -80,7 +86,7 @@ void setup() {
   images = new HashMap<>();
   String[] dev = new String[]{"Dev"};
   String[] show = new String[]{"Fire", "Moon"};
-  for (String g: dev)
+  for (String g: show)
     loadSlides(g);  
   slide = randomImage(slideGroup);
   
@@ -122,7 +128,7 @@ void draw() {
   backBuffer.beginDraw();
  
   if (backgroundOn) {
-    backBuffer.background(color(0)); 
+    backBuffer.background(black); 
   }
 
   if (slidesOn) 
@@ -179,12 +185,42 @@ void draw() {
   if (fpsOn) {
     push();
     noStroke();
-    fill(128);
+    fill(0, 20);
     rect(0, 0, 100, 24);
+    rect(0, 50, 40, 100);
     textAlign(LEFT, TOP);
     fill(128, 255, 128);
     textSize(24);
     text("FPS:" + nf(frameRate, 0, 2), 0, 0, 200, 50);
+
+    if (backgroundOn) {    
+      fill(reDD);
+      rect(0, 50, 15, 5);
+    }
+    if (slidesOn) {    
+      fill(greenDD);
+      rect(0, 55, 15, 5);
+    }
+    if (fliesOn) {    
+      fill(whiteDD);
+      rect(0, 60, 15, 5);
+    }
+    if (hitoOn) {    
+      fill(blueDD);
+      rect(0, 65, 15, 5);
+    }
+    if (inDDon) {    
+      fill(pinkDD);
+      rect(0, 70, 15, 5);
+    }
+    if (schiffOn) {    
+      fill(neonDD);
+      rect(0, 75, 15, 5);
+    }
+
+    fill(yellowDD);
+    rect(0, 90, subPixelDisclination * 10, 5);
+    
     pop();
   }
 }
@@ -259,7 +295,7 @@ void keyPressed() {
   if (key == 'w') {println(key, "DIEMODE:2"); dieMode = 2;}
     
   if (key == ENTER) {
-    saveFrame("LCDD#####.png");
+    saveFrame("screenshots/LCDD#####.png");
     println("ENTER", "SAVE FRAME");
   }
 
@@ -321,7 +357,10 @@ void keyPressed() {
     println("PSD", 1 << subPixelDisclination);
   }
   
-  if (key == 'n') connected = !connected;
+  if (key == 'n') {
+    connected = !connected;
+    println(key, "INNERCONNECTED", connected);
+  }
 
   if (key == 't') {
     for (int i = 0; i < lcds.length; i++)

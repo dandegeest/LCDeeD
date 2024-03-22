@@ -136,7 +136,7 @@ class LCDD extends Sprite {
         
         boolean lerped = false;
         if (brightness(pixelColor) > 165) {
-          pixelColor = neon2; //lerpColor(pixelColor, neon2, .75);
+          pixelColor = neonDD2; //lerpColor(pixelColor, neon2, .75);
           lerped = true;
         }
         
@@ -238,7 +238,7 @@ class LCDD extends Sprite {
       Pixel pix = _pixels.get(min(pi + pi2, pwRes * phRes -1 ));
       color pixelColor = color(pix.rv, pix.gv, pix.bv);
       if (brightness(pixelColor) > 165) {
-        pixelColor = color(neon2);//lerpColor(pixelColor, neon, .9);
+        pixelColor = color(neonDD2);//lerpColor(pixelColor, neon, .9);
       
         // Extract the RGB components
         //int a = (pixelColor >> 24) & 0xFF;
