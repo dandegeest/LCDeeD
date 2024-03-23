@@ -57,7 +57,7 @@ class Particle {
     color c = pColor;
     c = c << (int)random(100, 255);
     frame.noFill();
-    frame.strokeWeight((int)random(1, 3));
+    frame.strokeWeight(1);
     frame.stroke(c);
     frame.ellipse(p.x, p.y, radius, radius);
     if (connected)

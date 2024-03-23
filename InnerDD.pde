@@ -9,7 +9,7 @@ class InnerDD {
   void reset(int numP) {
     color[] colors = new color[2];
     colors[0] = neonDD;
-    colors[1] = reDD;
+    colors[1] = yellowDD;
     
     curlSpan = int(random(50, 100));
     particles.clear();
@@ -18,7 +18,7 @@ class InnerDD {
       particles.add(new Particle(new PVector(width/2, height/2).add(new PVector(-5, 5)),
         new PVector(0, 3.5).rotate(i * PI * 2 / numP),
         pc,
-        random(5, 20)
+        random(20, 40)
       ));
     }
   }

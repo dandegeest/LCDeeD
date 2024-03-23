@@ -33,7 +33,7 @@ class FireFlies {
     int gStep = 10;
     fg.beginDraw();
     fg.clear();
-    fg.fill(0x88002200);
+    fg.fill(slideTint);
     //fg.fill(0xCC1A0C0D);
     fg.noStroke();
     float gH = height / grassH;
@@ -75,7 +75,7 @@ class FireFlies {
   }
   
   void display(PGraphics frame) {
-    //drawGrass();
+    drawGrass();
       
     if (true) {
       for (FireFly f : fireFlies) {

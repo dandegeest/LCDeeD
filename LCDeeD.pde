@@ -29,7 +29,16 @@ color pinkDD2 = color(255, 105, 180);
 color neonDD = color(255, 105, 180);
 color neonDD2 = color(255, 20, 147);
 
+color[] palette = new color[]{
+  reDD, greenDD, blueDD, whiteDD, black, yellowDD, purpleDD, pinkDD, pinkDD2, neonDD, neonDD2,
+  #F45D01, #FAA028, #FFD464, #FFF3AC,
+  #5A6E69, #849FAA, #BDD3E6, #EFF7FB,
+  #C1D0D9, #96B5C9, #6A97B9, #4679A9,
+  #F45D01, #FAA028, #FFD464, #FFF3AC
+};
+
 color bgColor = purpleDD;
+color slideTint = whiteDD;
 
 // Buffer
 PGraphics backBuffer;
@@ -131,8 +140,10 @@ void draw() {
     backBuffer.background(black); 
   }
 
-  if (slidesOn) 
+  if (slidesOn) {
+    backBuffer.tint(slideTint);
     backBuffer.image(slide, slideX, 0);
+  }
   
   if (videoOn && video.available()) {
       video.read(); // Read the captured video frame
@@ -187,39 +198,52 @@ void draw() {
     noStroke();
     fill(0, 20);
     rect(0, 0, 100, 24);
-    rect(0, 50, 40, 100);
+    int indY = 50;
+    int indH = 10;
+    rect(0, indY, 50, 200);
     textAlign(LEFT, TOP);
     fill(128, 255, 128);
     textSize(24);
     text("FPS:" + nf(frameRate, 0, 2), 0, 0, 200, 50);
 
+    noFill();
+    stroke(yellowDD);
+    strokeWeight(10);
+    line(0, indY, 40, indY);
+    indY = 60;
+    noStroke();
+    fill(slideTint);
+    rect(0, indY, 50, indH);
+    indY = 70;
+    
     if (backgroundOn) {    
       fill(reDD);
-      rect(0, 50, 15, 5);
+      rect(0, indY+=indH, 15, indH);
     }
     if (slidesOn) {    
       fill(greenDD);
-      rect(0, 55, 15, 5);
+      rect(0, indY+=indH, 15, indH);
     }
     if (fliesOn) {    
       fill(whiteDD);
-      rect(0, 60, 15, 5);
+      rect(0, indY+=indH, 15, indH);
     }
     if (hitoOn) {    
       fill(blueDD);
-      rect(0, 65, 15, 5);
+      rect(0, indY+=indH, 15, indH);
     }
     if (inDDon) {    
       fill(pinkDD);
-      rect(0, 70, 15, 5);
+      rect(0, indY+=indH, 15, indH);
     }
     if (schiffOn) {    
       fill(neonDD);
-      rect(0, 75, 15, 5);
+      rect(0, indY+=indH, 15, indH);
     }
-
-    fill(yellowDD);
-    rect(0, 90, subPixelDisclination * 10, 5);
+    if (fireOn) {    
+      fill(palette[15]);
+      rect(0, indY+=indH, 15, indH);
+    }
     
     pop();
   }
@@ -374,6 +398,11 @@ void keyPressed() {
     else
       lcds[0].setResolution(width, height, 3);
     println(key, "SPLIT");
+  }
+  
+  if (key == 'a') {
+    slideTint = palette[(int)random(palette.length)];
+    println(key, "TINT");
   }
   fire.keyPressed();  
 }
