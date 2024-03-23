@@ -111,7 +111,7 @@ class LCDD extends Sprite {
           if (a == 0)
             px.setRGB(0, 0, 0, 0);
           else
-            px.setRGB(r, g, b, y % 2 == 0 ? .5 : .9);
+            px.setRGB(r, g, b, y % 2 == 0 ? .5 : 1.0);
         }
       }
     }
@@ -238,7 +238,7 @@ class LCDD extends Sprite {
       Pixel pix = _pixels.get(min(pi + pi2, pwRes * phRes -1 ));
       color pixelColor = color(pix.rv, pix.gv, pix.bv);
       if (brightness(pixelColor) > 165) {
-        pixelColor = color(neonDD2);//lerpColor(pixelColor, neon, .9);
+        pixelColor = lerpColor(pixelColor, neonDD2, .9);
       
         // Extract the RGB components
         //int a = (pixelColor >> 24) & 0xFF;

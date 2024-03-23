@@ -3,8 +3,6 @@
 
 LCDD lcds[];
 
-Capture video;
-
 InnerDD innerDD;
 Hitodama hito;
 FireFlies flies;
@@ -86,7 +84,7 @@ void loadSlides(String group) {
 void setup() {
   size(1280, 720);
   frameRate(60);
-  fullScreen();
+  //fullScreen();
   
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Moon"});
   lyrics.add(new String[] {"Love", "is a", "fortress", "of light", "come inside"});
@@ -95,7 +93,7 @@ void setup() {
   images = new HashMap<>();
   String[] dev = new String[]{"Dev"};
   String[] show = new String[]{"Fire", "Moon"};
-  for (String g: show)
+  for (String g: dev)
     loadSlides(g);  
   slide = randomImage(slideGroup);
   
@@ -113,7 +111,6 @@ void setup() {
   innerDD = new InnerDD();
   schiff = new Schiffman(width, height);
 
-  video = new Capture(this, width, height);
   timerFn = () -> {
     if (slidesOn) {
       slide = randomImage(slideGroup);
@@ -140,16 +137,12 @@ void draw() {
     backBuffer.background(black); 
   }
 
+
   if (slidesOn) {
     backBuffer.tint(slideTint);
     backBuffer.image(slide, slideX, 0);
   }
   
-  if (videoOn && video.available()) {
-      video.read(); // Read the captured video frame
-      backBuffer.image(video, 0, 0);
-    }
-
   if (lyricsOn) {
     backBuffer.push();
     backBuffer.noStroke();
@@ -306,15 +299,6 @@ void keyPressed() {
     println(key, "Static", staticOn);
   }
 
-  if (key == 'v') {
-    videoOn = !videoOn;
-    if (video == null)
-      return;
-      
-    if (videoOn) video.start();
-    else video.stop();
-  }
-
   if (key == 'q') {println(key, "DIEMODE:1"); dieMode = 1;}
   if (key == 'w') {println(key, "DIEMODE:2"); dieMode = 2;}
     
@@ -325,10 +309,22 @@ void keyPressed() {
 
   if (keyCode == LEFT) {
     lcds[0].transX -= lcds[0].scale * 10;
+    println("TX", lcds[0].transX);
   }
 
   if (keyCode == RIGHT) {
     lcds[0].transX += lcds[0].scale * 10;
+    println("TX", lcds[0].transX);
+  }
+
+  if (key == '<') {
+    lcds[0].transY -= lcds[0].scale * 10;
+    println("TY", lcds[0].transY);
+  }
+
+  if (key == '>') {
+    lcds[0].transY += lcds[0].scale * 10;
+    println("TY", lcds[0].transY);
   }
 
   if (key == '=') {
@@ -404,6 +400,9 @@ void keyPressed() {
     slideTint = palette[(int)random(palette.length)];
     println(key, "TINT");
   }
+  
+  println(key);
+
   fire.keyPressed();  
 }
 
