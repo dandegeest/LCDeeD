@@ -17,9 +17,12 @@ class LCDD extends Sprite {
   float scanLine = 0;
   int pvscanLine = 0;
   // Thumbnail preview
-  boolean imageOn = false;
-  //
+  boolean pipOn = false;
+  // Source to display
   PImage source;
+  // Station logo
+  PImage logo;
+  boolean logoOn = false;
   
   LCDD(float x, float y, float w, float h, int psize) {
     super(x, y, w, h);
@@ -108,8 +111,9 @@ class LCDD extends Sprite {
             continue;
           }
           
-          if (a == 0)
-            px.setRGB(0, 0, 0, 0);
+          if (a == 0) {
+            px.setRGB((slideTint >> 16) & 0xFF, (slideTint >> 8) & 0xFF, slideTint & 0xF, .5);
+          }
           else
             px.setRGB(r, g, b, y % 2 == 0 ? .5 : 1.0);
         }
@@ -203,7 +207,11 @@ class LCDD extends Sprite {
     //  println(c, "PIXELS SET");
     popMatrix();
     
-    if (imageOn)
+    if (logo != null && logoOn) {
+      image(logo, location().x + _width - logo.width, location().y + _height - logo.height);
+    }
+
+    if (pipOn)
       image(source, location().x + _width - source.width, location().y + _height - source.height);
     
     scanComplete();

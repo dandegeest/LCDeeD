@@ -78,4 +78,3 @@ ArrayList<String> loadImageFolder(String folderPath) {
   
   return filenames;
 }
- 

@@ -11,11 +11,12 @@ class FireFlies {
   float grassH = 1.8;
   int windDir = 1;
   float wind = 1;
+  boolean grassOn = false;
   
   FireFlies(int w, int h) {
-    for (int i = 0; i < 16; i++) {
-    int range = (int)random(0,80);
-    colors.add(color(255-range, 255-range, 255-range));
+    for (int i = 0; i < 32; i++) {
+      int range = (int)random(0,80);
+      colors.add(color(255-range));
     }
 
     fg = createGraphics(w, h);
@@ -75,8 +76,6 @@ class FireFlies {
   }
   
   void display(PGraphics frame) {
-    drawGrass();
-      
     if (true) {
       for (FireFly f : fireFlies) {
         f.update();
@@ -85,7 +84,11 @@ class FireFlies {
         f.display(frame);
       }
     }
-    frame.image(fg, 0, height / 10);
+
+    if (grassOn) {
+      drawGrass();
+      frame.image(fg, 0, height / 10);
+    }
   }
   
   class FireFly {
@@ -147,7 +150,7 @@ class FireFlies {
         }
       }
       if (lit == 1) {
-        fcolor = lerpColor(fcolor, lcolor, random(0.1, 0.9));
+        fcolor = lerpColor(fcolor, slideTint, random(0.5, 1.0));
       }
     }
   
