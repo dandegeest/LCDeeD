@@ -1,9 +1,12 @@
 import java.util.List;
 
 class LCDD extends Sprite {
+  boolean tvOn = false;
+  // Resolution
   int pwRes = 0; // Pixels per Line
   int phRes = 0; // Number of lines
   int pxSize = 3; // Pixel size ( 3 X 3 -> Each subpixel is 1 X 3
+  // Display Pixels
   ArrayList<Pixel> _pixels = new ArrayList<Pixel>();
   // Invalid pixel range for redraw
   int[] redrawRange = new int[2];
@@ -23,6 +26,14 @@ class LCDD extends Sprite {
   // Station logo
   PImage logo;
   boolean logoOn = false;
+  // Brightness Mode
+  int bright = 1;
+  // Overscan
+  color overScanColor = blueDD;
+  int overScanInterval = 10;
+  int overScanSize = 2;
+  int overScanAlpha = 50;
+  boolean overScanOn = false;
   
   LCDD(float x, float y, float w, float h, int psize) {
     super(x, y, w, h);
@@ -114,8 +125,19 @@ class LCDD extends Sprite {
           if (a == 0) {
             px.setRGB((slideTint >> 16) & 0xFF, (slideTint >> 8) & 0xFF, slideTint & 0xF, .5);
           }
-          else
-            px.setRGB(r, g, b, y % 2 == 0 ? .5 : 1.0);
+          else {
+            switch (bright) {
+              case 0:
+                px.setRGB(r, g, b, y % 2 == 0 ? .5 : 1.0);
+                break;
+              case 1:
+                px.setRGB(r, g, b, 1.0);
+                break;
+              case 2:
+                px.setRGB(r, g, b, brightness(pixelColor));
+                break;
+            }
+          }
         }
       }
     }
@@ -183,12 +205,22 @@ class LCDD extends Sprite {
   }
   
   void display() { 
+    if (overScanOn) {
+      // Overscan lines directly to screen
+      push();
+      fill((overScanColor & 0xFFFFFF) | (int(overScanAlpha) << 24));
+      for (int x = 0; x < _width; x += overScanInterval) {
+        rect(location().x + x, location().y, overScanSize, _height);
+      }
+      pop();
+    }
+     
     pushMatrix();
     scale(scale);
     translate(transX, transY);
 
     if (scanInterval > 0)
-      staticc();
+      scanner();
       
     pinky();
     
@@ -217,7 +249,7 @@ class LCDD extends Sprite {
     scanComplete();
   } 
   
-  void staticc() {
+  void scanner() {
     if (scanLine == 0) {
       pvscanLine = phRes -1;
     }

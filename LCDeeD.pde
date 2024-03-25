@@ -58,7 +58,6 @@ color[] palette = new color[]{
   #6ba4ff  // Bright Blue
 };
 
-color overScanColor = purpleDD;
 color bgColor = black;
 color slideTint = whiteDD;
 
@@ -74,15 +73,21 @@ boolean hitoOn = false;
 boolean videoOn = false;
 boolean slidesOn = true;
 boolean fpsOn = true;
-boolean overScanOn = false;
 boolean lyricsOn = false;
 boolean schiffOn = false;
-boolean tvOn = true;
+
+//Active TV Input
+int input = 0;
 
 String slideGroup;
 int slideNumber = 0;
 PImage slide;
 float slideX = 0;
+
+void setSlideGroup(String group) {
+  slideGroup = group;
+  timerFn.timeout();
+}
 
 PImage nextSlide(String group) {
   if (!slides.containsKey(group))
@@ -147,8 +152,8 @@ void setup() {
   frameRate(60);
   //fullScreen();
   
-  lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Moon"});
-  lyrics.add(new String[] {"Love", "is a", "fortress", "of light", "come inside"});
+  lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
+  lyrics.add(new String[] {"Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
   lyric = lyrics.get(0);
   
   slides = new HashMap<>();
@@ -162,6 +167,7 @@ void setup() {
   lcds[0] = new LCDD(0, 0, width, height, 3);
   lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch\\wiitch_logo2.png");
   lcds[0].logo.resize(0, 100);
+  lcds[0].tvOn = true;
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
   lcds[2] = new LCDD(0, height/2, width/2, height/2, 3);
@@ -178,7 +184,6 @@ void setup() {
   timerFn = () -> {
     if (slidesOn) {
       slide = nextSlide(slideGroup);
-      lyricChange();
     }
   };
 }
@@ -187,20 +192,11 @@ int word = 0;
 void draw() {  
   timer(timerFn);
   
-  if (frameCount % 60 * 5 == 0) {
-    word++;
-    if (word == lyric.length) word = 0;
-  }
-  
-  if (overScanOn)
-    g.background(overScanColor); 
-  
   backBuffer.beginDraw();
  
   if (backgroundOn) {
     backBuffer.background(bgColor); 
   }
-
 
   if (slidesOn) {
     backBuffer.tint(slideTint);
@@ -242,17 +238,12 @@ void draw() {
   backBuffer.endDraw();
   
   PImage bImage = backBuffer.get();
-  if (tvOn) {
-    for (int i = lcds.length - 1; i >= 0; i--) {
-      if (i == 0 || (lcds[0]._width < width && lcds[0]._height < height)) {
-        bImage.resize(0, lcds[i].phRes);
-        lcds[i].sourceImage(bImage);
-        lcds[i].display();
-      }
+  for (int i = lcds.length - 1; i >= 0; i--) {
+    if (lcds[i].tvOn) {
+      bImage.resize(0, lcds[i].phRes);
+      lcds[i].sourceImage(bImage);
+      lcds[i].display();
     }
-  }
-  else {
-    image(bImage, 0, 0);
   }
   
   if (fpsOn) {
@@ -320,6 +311,12 @@ void keyPressed() {
     flies.hatch(int(random(50, 200)));
   }
     
+    if (key == '/' || key == '?') {
+    lcds[input].overScanColor = palette[(int)random(palette.length)];
+    if (key == '?') lcds[input].overScanColor = bgColor = black;
+    println(key, "TINT");
+  }
+  
   if (key == 'b') {
     backgroundOn = !backgroundOn;
     for (int i = 0; i < lcds.length; i++)
@@ -327,14 +324,14 @@ void keyPressed() {
     println(key, "BACKGROUND", backgroundOn);
   }
 
-  if (key == 'g') slideGroup = "Dev";
-  if (key == 'G') slideGroup = "Moon";
-  if (key == 'w') slideGroup = "Wiitch";
+  if (key == 'g') setSlideGroup("Dev");
+  if (key == 'G') setSlideGroup("Moon");
+  if (key == 'w') setSlideGroup("Wiitch");
   
-  if (key == 'L') lcds[0].logoOn = !lcds[0].logoOn;
+  if (key == 'L') lcds[input].logoOn = !lcds[input].logoOn;
   
   if (key == 'm' || key == 'M') {
-    slideGroup = "Fire";
+    setSlideGroup("Fire");
     fireOn = !fireOn;
     println(key, "FIRE", fireOn);
   }
@@ -345,7 +342,7 @@ void keyPressed() {
   }
 
   if (key == 'o') {
-    slideGroup = "Phases";
+    setSlideGroup("Phases");
     fliesOn = !fliesOn;
     println(key, "FIREFLIES", fliesOn);
   }
@@ -374,8 +371,8 @@ void keyPressed() {
   }
 
   if (key == '.') {
-    overScanOn = !overScanOn;
-    println(key, "Static", overScanOn);
+    lcds[input].overScanOn = !lcds[input].overScanOn;
+    println(key, "Overscan", input, lcds[input].overScanOn);
   }
 
   if (key == 'e') {println(key, "DIEMODE:1"); dieMode = 1;}
@@ -387,50 +384,75 @@ void keyPressed() {
   }
 
   if (keyCode == LEFT) {
-    lcds[0].transX -= lcds[0].scale * 10;
-    println("TX", lcds[0].transX);
+    lcds[input].transX -= lcds[input].scale * 10;
+    println("TX", lcds[input].transX);
   }
 
   if (keyCode == RIGHT) {
-    lcds[0].transX += lcds[0].scale * 10;
-    println("TX", lcds[0].transX);
+    lcds[input].transX += lcds[input].scale * 10;
+    println("TX", lcds[input].transX);
   }
 
   if (key == '<') {
-    lcds[0].transY -= lcds[0].scale * 10;
-    println("TY", lcds[0].transY);
+    lcds[input].transY -= lcds[input].scale * 10;
+    println("TY", lcds[input].transY);
   }
 
   if (key == '>') {
-    lcds[0].transY += lcds[0].scale * 10;
-    println("TY", lcds[0].transY);
-  }
-
-  if (key == '=') {
-    lcds[0].transX = lcds[0].transY = 0.0;
-    println(key, "TRANS RESET");
+    lcds[input].transY += lcds[input].scale * 10;
+    println("TY", lcds[input].transY);
   }
   
   if (keyCode == UP) {
-    lcds[0].scale += .5;
-    println("SCALE", lcds[0].scale);
+    lcds[input].scale += .5;
+    println("SCALE", lcds[input].scale);
   }
 
   if (keyCode == DOWN) {
-    lcds[0].scale -= .5;
-    println("SCALE", lcds[0].scale);
+    lcds[input].scale -= .5;
+    println("SCALE", lcds[input].scale);
   }
   
-  if (keyCode >= '1' && keyCode <= '9') {
-    //Scale from 1.1 to 1.9
+  if (key >= '1' && key <= '4') {
     String f = "" + key;
-    int factor = Integer.parseInt(f);
-    lcds[0].scale = lcds[0].scale + .1 * factor;
+    input = Integer.parseInt(f) - 1;
+    println(key, "INPUT", input);
   }
   
-  if (key == '0') {
-    lcds[0].scale = 1.0;
-    println("SCALE", lcds[0].scale);
+  if (key >= '5' && key <= '7') {
+    String f = "" + key;
+    lcds[input].bright = Integer.parseInt(f) - 5;
+    println(key, "BRIGHT", input, lcds[input].bright);
+  }
+  
+  if (key == '8') {
+    lcds[input].overScanInterval++;
+    println(key, "OVERSCAN INT", input, lcds[input].overScanInterval);
+  }
+
+  if (key == '*') {
+    lcds[input].overScanInterval = 2;
+    println(key, "OVERSCAN INT", input, lcds[input].overScanInterval);
+  }
+  
+  if (key == '9') {
+    lcds[input].overScanSize++;
+    println(key, "OVERSCAN SIZE", input, lcds[input].overScanSize);
+  }
+
+  if (key == '(') {
+    lcds[input].overScanSize = 2;
+    println(key, "OVERSCAN SIZE", input, lcds[input].overScanSize);
+  }
+
+  if (key == '=') {
+    lcds[input].scale = 1.0;
+    println("SCALE", lcds[input].scale);
+  }
+
+  if (key == '+') {
+    lcds[input].transX = lcds[input].transY = 0.0;
+    println(key, "TRANS", "0,0");
   }
 
   if (key == 'j') {
@@ -443,7 +465,7 @@ void keyPressed() {
     println(key, "LYRICS", lyricsOn);
   }
   
-  if (key == 'l') {
+  if (key == 'K') {
     lyricChange();
     println(key, "Lyric Change");
   }
@@ -464,20 +486,39 @@ void keyPressed() {
   if (key == 't') {
     for (int i = 0; i < lcds.length; i++)
       lcds[i].pipOn = !lcds[i].pipOn;
-    println(key, "PIP", lcds[0].pipOn);
+    println(key, "PIP", lcds[input].pipOn);
   }
   
-  if (key == 'T') {
-    tvOn = !tvOn;
-    println(key, "TV/ON", tvOn);
+  if (key == '!') {
+    lcds[0].tvOn = !lcds[0].tvOn;
+    println(key, "TV/ON 0", lcds[input].tvOn);
+  }
+  if (key == '@') {
+    lcds[1].tvOn = !lcds[1].tvOn;
+    println(key, "TV/ON 1", lcds[input].tvOn);
+  }
+  if (key == '#') {
+    lcds[2].tvOn = !lcds[2].tvOn;
+    println(key, "TV/ON 2", lcds[input].tvOn);
+  }
+  if (key == '$') {
+    lcds[3].tvOn = !lcds[3].tvOn;
+    println(key, "TV/ON 3", lcds[input].tvOn);
   }
 
   if (key == '-') {
-    if (lcds[0]._width == width)
-      lcds[0].setResolution(width/2, height/2, 3);
-    else
-      lcds[0].setResolution(width, height, 3);
-    println(key, "SPLIT");
+    if (lcds[input]._width == width) {
+      lcds[input].setResolution(width/2, height/2, 3);
+      for (int i = 1; i < lcds.length; i++)
+        lcds[i].tvOn = true;
+      println(key, "SPLIT/OFF");
+    }
+    else {
+      lcds[input].setResolution(width, height, 3);
+      for (int i = 1; i < lcds.length; i++)
+        lcds[i].tvOn = false;
+      println(key, "SPLIT/OFF");
+    }
   }
   
   if (key == 'a' || key == 'A') {
