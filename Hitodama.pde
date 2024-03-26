@@ -72,7 +72,7 @@ class Shape {
   void display(PGraphics frame) {
     frame.push();
     frame.noStroke();
-    frame.fill(this.c);
+    frame.fill(lerpColor(this.c, slideTint, .5));
     frame.translate(this.x, this.y);
     // rotate(this.t + 45);
     frame.circle(0, 0, this.w);

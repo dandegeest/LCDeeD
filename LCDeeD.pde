@@ -72,7 +72,7 @@ boolean fliesOn = false;
 boolean hitoOn = false;
 boolean videoOn = false;
 boolean slidesOn = true;
-boolean fpsOn = true;
+boolean fpsOn = false;
 boolean lyricsOn = false;
 boolean schiffOn = false;
 
@@ -81,6 +81,7 @@ int input = 0;
 
 String slideGroup;
 int slideNumber = 0;
+int lastPhase = 0;
 PImage slide;
 float slideX = 0;
 
@@ -104,6 +105,8 @@ PImage nextSlide(String group) {
   
   slideX = random(width - slide.image.width);
   slideNumber++;
+  if (group == "Phases")
+    lastPhase = slideNumber;
   return slide.image;
 }
 
@@ -153,7 +156,8 @@ void setup() {
   //fullScreen();
   
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
-  lyrics.add(new String[] {"Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
+  lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
+  lyrics.add(new String[] {"It's the Moon", "The Pink Moon", "And It's", "Rising"});
   lyric = lyrics.get(0);
   
   slides = new HashMap<>();
@@ -170,7 +174,9 @@ void setup() {
   lcds[0].tvOn = true;
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
+  lcds[1].scanInterval = 2;
   lcds[2] = new LCDD(0, height/2, width/2, height/2, 3);
+  lcds[2].scanInterval = .5;
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   
   backBuffer = createGraphics(width, height);
@@ -195,7 +201,6 @@ void draw() {
   backBuffer.beginDraw();
  
   if (backgroundOn) {
-    background(bgColor);
     backBuffer.background(bgColor); 
   }
 
@@ -250,6 +255,7 @@ void draw() {
   }
   
   if (offCnt == 4) image(bImage, 0, 0);
+  bImage = null; 
   
   if (fpsOn) {
     push();
@@ -330,14 +336,15 @@ void keyPressed() {
   }
 
   if (key == 'g') setSlideGroup("Dev");
-  if (key == 'G') setSlideGroup("Moon");
+  if (key == 'W') setSlideGroup("Moon");
   if (key == 'w') setSlideGroup("Wiitch");
   
   if (key == 'L') lcds[input].logoOn = !lcds[input].logoOn;
   
   if (key == 'm' || key == 'M') {
-    setSlideGroup("Fire");
     fireOn = !fireOn;
+    if (fireOn)
+      setSlideGroup("Fire");
     println(key, "FIRE", fireOn);
   }
 
@@ -347,12 +354,16 @@ void keyPressed() {
   }
 
   if (key == 'o') {
-    setSlideGroup("Phases");
     fliesOn = !fliesOn;
+    if (fliesOn) {
+      slideNumber = lastPhase;
+      setSlideGroup("Phases");
+    }
     println(key, "FIREFLIES", fliesOn);
   }
   if (key == 'O') {
-    flies.grassOn = !flies.grassOn;
+    if (fliesOn)
+      flies.grassOn = !flies.grassOn;
   }
   
   if (key == 'h') {
@@ -456,7 +467,8 @@ void keyPressed() {
   }
 
   if (key == '+') {
-    lcds[input].transX = lcds[input].transY = 0.0;
+    lcds[input].transX = 0.0;
+    lcds[input].transY = 0.0;
     println(key, "TRANS", input, "0,0");
   }
 
@@ -512,11 +524,11 @@ void keyPressed() {
   }
 
   if (key == '-') {
-    if (lcds[input]._width == width) {
+    if (lcds[0]._width == width) {
       lcds[0].setResolution(width/2, height/2, 3);
-      for (int i = 1; i < lcds.length; i++)
+      for (int i = 0; i < lcds.length; i++)
         lcds[i].tvOn = true;
-      println(key, "SPLIT/OFF");
+      println(key, "SPLIT/ON");
     }
     else {
       lcds[0].setResolution(width, height, 3);

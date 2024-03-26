@@ -104,7 +104,6 @@ class LCDD extends Sprite {
     //source.resize(pwRes, 0);
     //println("----->", source.width, source.height);
     int xoff = (pwRes - source.width) / 2;
-    source.loadPixels();
     for (int y = 0; y < phRes; y++) {
       for (int x = 0; x < pwRes; x++) {
         if (x < source.width && y < source.height) {

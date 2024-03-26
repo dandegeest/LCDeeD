@@ -1,5 +1,5 @@
-  int curlSpan = 0;
-  ArrayList<Particle> particles = new ArrayList<Particle>();
+int curlSpan = 0;
+ArrayList<Particle> particles = new ArrayList<Particle>();
 class InnerDD {
  
   InnerDD() {
@@ -33,10 +33,13 @@ class InnerDD {
         particles.remove(i);
         color pc = p.pColor;//color(255, random(105, 255), random(180, 255), 255);
         spawns.add(new Particle(new PVector(width/2, height/2).add(new PVector(-5, 5)),p.ov.mult(2), pc, random(5, 10)));
+        p = null;
       }
     }
     
-    if (particles.size() < 500)
+    if (particles.size() < 400)
       particles.addAll(spawns);
+    else
+      spawns.clear();
   }
 }

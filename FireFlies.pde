@@ -35,7 +35,6 @@ class FireFlies {
     fg.beginDraw();
     fg.clear();
     fg.fill(slideTint);
-    //fg.fill(0xCC1A0C0D);
     fg.noStroke();
     float gH = height / grassH;
     
@@ -129,10 +128,8 @@ class FireFlies {
     }
   
     void relate() {
-      color lcolor = 0;
       for (FireFly other : fireFlies) {
         if (other == this) continue;
-        lcolor = other.fcolor;
         float distance = PVector.dist(pos, other.pos);
         if (distance < 30) {
           if (lit > 50) {
