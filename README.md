@@ -7,6 +7,6 @@ An LCD TV simulation renderer for Processing
 ![image](/screenshots/LCDD04526.png)
 ![image](/screenshots/LCDD01535.png)
 ![image](/screenshots/LCDD03932.png)
-![image](/screenshots/LCDD0055.png)
+![image](/screenshots/LCDD08055.png)
 
 
