@@ -195,6 +195,7 @@ void draw() {
   backBuffer.beginDraw();
  
   if (backgroundOn) {
+    background(bgColor);
     backBuffer.background(bgColor); 
   }
 
@@ -238,13 +239,17 @@ void draw() {
   backBuffer.endDraw();
   
   PImage bImage = backBuffer.get();
+  int offCnt = 0;
   for (int i = lcds.length - 1; i >= 0; i--) {
     if (lcds[i].tvOn) {
       bImage.resize(0, lcds[i].phRes);
       lcds[i].sourceImage(bImage);
       lcds[i].display();
     }
+    else offCnt++;
   }
+  
+  if (offCnt == 4) image(bImage, 0, 0);
   
   if (fpsOn) {
     push();
@@ -447,12 +452,12 @@ void keyPressed() {
 
   if (key == '=') {
     lcds[input].scale = 1.0;
-    println("SCALE", lcds[input].scale);
+    println("SCALE", input, lcds[input].scale);
   }
 
   if (key == '+') {
     lcds[input].transX = lcds[input].transY = 0.0;
-    println(key, "TRANS", "0,0");
+    println(key, "TRANS", input, "0,0");
   }
 
   if (key == 'j') {
@@ -508,13 +513,13 @@ void keyPressed() {
 
   if (key == '-') {
     if (lcds[input]._width == width) {
-      lcds[input].setResolution(width/2, height/2, 3);
+      lcds[0].setResolution(width/2, height/2, 3);
       for (int i = 1; i < lcds.length; i++)
         lcds[i].tvOn = true;
       println(key, "SPLIT/OFF");
     }
     else {
-      lcds[input].setResolution(width, height, 3);
+      lcds[0].setResolution(width, height, 3);
       for (int i = 1; i < lcds.length; i++)
         lcds[i].tvOn = false;
       println(key, "SPLIT/OFF");

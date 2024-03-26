@@ -208,7 +208,7 @@ class LCDD extends Sprite {
     if (overScanOn) {
       // Overscan lines directly to screen
       push();
-      fill((overScanColor & 0xFFFFFF) | (int(overScanAlpha) << 24));
+      fill(overScanColor, overScanAlpha);
       for (int x = 0; x < _width; x += overScanInterval) {
         rect(location().x + x, location().y, overScanSize, _height);
       }
