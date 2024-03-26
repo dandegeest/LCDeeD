@@ -7,6 +7,11 @@ interface TimerFunction {
     void timeout();
 }
 
+@FunctionalInterface
+interface VisEvent {
+    void fire();
+}
+
 int interval = 10 * 1000; // 1 Second Timer Interval
 int previousTime = 0;
 

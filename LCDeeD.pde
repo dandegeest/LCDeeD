@@ -13,10 +13,15 @@ Schiffman schiff; // Adapted from https://processing.org/examples/tree.html
 
 // Slides
 HashMap<String, ArrayList<Slide>> slides;
+// Lyrics
 ArrayList<String[]> lyrics = new ArrayList<>();
 String[] lyric;
+int word = 0;
 
 TimerFunction timerFn;
+
+// Events
+HashMap<Character, VisEvent> visEvents = new HashMap();
 
 // Colors
 color reDD = color(222, 0, 0);
@@ -72,13 +77,14 @@ boolean fliesOn = false;
 boolean hitoOn = false;
 boolean videoOn = false;
 boolean slidesOn = true;
-boolean fpsOn = false;
+boolean debugOn = false;
 boolean lyricsOn = false;
 boolean schiffOn = false;
 
 //Active TV Input
 int input = 0;
 
+//Images
 String slideGroup;
 int slideNumber = 0;
 int lastPhase = 0;
@@ -192,9 +198,23 @@ void setup() {
       slide = nextSlide(slideGroup);
     }
   };
+  
+  loadEvents();
 }
 
-int word = 0;
+void loadEvents() {
+  visEvents.put('0', resetAll);
+  visEvents.put('b', toggleBackground);
+  visEvents.put('d', toggleDebug);
+  visEvents.put('h', toggleHito);
+  visEvents.put('i', toggleInnerDD);
+  visEvents.put('o', toggleFlies);
+  visEvents.put('p', toggleSchiff);
+  visEvents.put('s', toggleSlides);
+  visEvents.put(BACKSPACE, resetVis);
+  visEvents.put(ENTER, saveFrame);
+}
+
 void draw() {  
   timer(timerFn);
   
@@ -257,7 +277,7 @@ void draw() {
   if (offCnt == 4) image(bImage, 0, 0);
   bImage = null; 
   
-  if (fpsOn) {
+  if (debugOn) {
     push();
     noStroke();
     fill(0, 20);
@@ -315,26 +335,18 @@ void draw() {
 }
 
 void keyPressed() {
-  if (key == BACKSPACE) {
-    println("BACKSPACE", "Random Slide", "Reset", "Hatch");
-    slide = nextSlide(slideGroup);
-    innerDD.reset((int)random(10,200));
-    flies.hatch(int(random(50, 200)));
+  if (key == CODED) handleCoded();
+  
+  if (visEvents.containsKey(key)) {
+    visEvents.get(key).fire();
   }
-    
-    if (key == '/' || key == '?') {
+  
+  if (key == '/' || key == '?') {
     lcds[input].overScanColor = palette[(int)random(palette.length)];
     if (key == '?') lcds[input].overScanColor = bgColor = black;
     println(key, "TINT");
   }
   
-  if (key == 'b') {
-    backgroundOn = !backgroundOn;
-    for (int i = 0; i < lcds.length; i++)
-      lcds[i].invalidate();
-    println(key, "BACKGROUND", backgroundOn);
-  }
-
   if (key == 'g') setSlideGroup("Dev");
   if (key == 'W') setSlideGroup("Moon");
   if (key == 'w') setSlideGroup("Wiitch");
@@ -348,44 +360,11 @@ void keyPressed() {
     println(key, "FIRE", fireOn);
   }
 
-  if (key == 'f') {
-    fpsOn = !fpsOn;
-    println(key, "FPS", fpsOn);
-  }
-
-  if (key == 'o') {
-    fliesOn = !fliesOn;
-    if (fliesOn) {
-      slideNumber = lastPhase;
-      setSlideGroup("Phases");
-    }
-    println(key, "FIREFLIES", fliesOn);
-  }
   if (key == 'O') {
     if (fliesOn)
       flies.grassOn = !flies.grassOn;
   }
   
-  if (key == 'h') {
-    hitoOn = !hitoOn;
-    println(key, "HITODAMA", hitoOn);
-  }
-  
-  if (key == 'i') {
-    inDDon = !inDDon;
-    println(key, "INNERDDEMON", inDDon);
-  }
-
-  if (key == 'p') {
-    schiffOn = !schiffOn;
-    println(key, "SCHIFFON", schiffOn);
-  }
-
-  if (key == 's') {
-    slidesOn = !slidesOn;
-    println(key, "SLIDES", slidesOn);
-  }
-
   if (key == '.') {
     lcds[input].overScanOn = !lcds[input].overScanOn;
     println(key, "Overscan", input, lcds[input].overScanOn);
@@ -393,21 +372,6 @@ void keyPressed() {
 
   if (key == 'e') {println(key, "DIEMODE:1"); dieMode = 1;}
   if (key == 'r') {println(key, "DIEMODE:2"); dieMode = 2;}
-    
-  if (key == ENTER) {
-    saveFrame("screenshots/LCDD#####.png");
-    println("ENTER", "SAVE FRAME");
-  }
-
-  if (keyCode == LEFT) {
-    lcds[input].transX -= lcds[input].scale * 10;
-    println("TX", lcds[input].transX);
-  }
-
-  if (keyCode == RIGHT) {
-    lcds[input].transX += lcds[input].scale * 10;
-    println("TX", lcds[input].transX);
-  }
 
   if (key == '<') {
     lcds[input].transY -= lcds[input].scale * 10;
@@ -418,17 +382,7 @@ void keyPressed() {
     lcds[input].transY += lcds[input].scale * 10;
     println("TY", lcds[input].transY);
   }
-  
-  if (keyCode == UP) {
-    lcds[input].scale += .5;
-    println("SCALE", lcds[input].scale);
-  }
-
-  if (keyCode == DOWN) {
-    lcds[input].scale -= .5;
-    println("SCALE", lcds[input].scale);
-  }
-  
+    
   if (key >= '1' && key <= '4') {
     String f = "" + key;
     input = Integer.parseInt(f) - 1;
@@ -463,18 +417,13 @@ void keyPressed() {
 
   if (key == '=') {
     lcds[input].scale = 1.0;
-    println("SCALE", input, lcds[input].scale);
+    println("SCALE RESET", input, lcds[input].scale);
   }
 
   if (key == '+') {
     lcds[input].transX = 0.0;
     lcds[input].transY = 0.0;
-    println(key, "TRANS", input, "0,0");
-  }
-
-  if (key == 'j') {
-    word++;
-    if (word >= lyric.length) word = 0;
+    println(key, "TRANS RESET", input, "(0,0)");
   }
 
   if (key == 'k') {
@@ -487,6 +436,11 @@ void keyPressed() {
     println(key, "Lyric Change");
   }
   
+  if (key == 'j') {
+    word++;
+    if (word >= lyric.length) word = 0;
+  }
+ 
   if (key == 'c') {
     subPixelDisclination++;
     if (subPixelDisclination > 2)
@@ -551,3 +505,99 @@ void lyricChange() {
   lyric = lyrics.get((int)random(lyrics.size()));
   word = 0;
 }
+
+VisEvent toggleHito = () -> {
+  hitoOn = !hitoOn;
+  println(key, "HITODAMA", hitoOn);
+};
+
+VisEvent toggleFlies = () -> {
+  fliesOn = !fliesOn;
+  if (fliesOn) {
+    slideNumber = lastPhase;
+    setSlideGroup("Phases");
+  }
+};
+
+VisEvent toggleInnerDD = () -> {
+  inDDon = !inDDon;
+  println(key, "INNERDDEMON", inDDon);
+};
+
+VisEvent toggleSchiff = () -> {
+  schiffOn = !schiffOn;
+  println(key, "SCHIFFON", schiffOn);
+};
+
+VisEvent toggleSlides = () -> {
+  slidesOn = !slidesOn;
+  println(key, "SLIDES", slidesOn);
+};
+
+VisEvent resetVis = () -> {
+  slide = nextSlide(slideGroup);
+  innerDD.reset((int)random(10,200));
+  flies.hatch(int(random(50, 200)));
+  println("BACKSPACE", "Random Slide", "Reset", "Hatch");
+};
+
+VisEvent toggleDebug = () -> {
+  debugOn = !debugOn;
+  println(key, "FPS", debugOn);
+};
+
+VisEvent toggleBackground = () -> {
+  backgroundOn = !backgroundOn;
+  for (int i = 0; i < lcds.length; i++)
+    lcds[i].invalidate();
+  println(key, "BACKGROUND", backgroundOn);
+};
+
+VisEvent resetAll = () -> {
+  for (int i = 0; i < 4; i++) {
+    lcds[i].scale = 1.0;
+    lcds[i].transX = 0.0;
+    lcds[i].transY = 0.0;
+  }
+  println("RESET");
+};
+
+VisEvent saveFrame = () -> {
+  saveFrame("screenshots/LCDD#####.png");
+  println("ENTER", "SAVE FRAME");
+};
+
+VisEvent transLeft = () -> {
+  lcds[input].transX -= lcds[input].scale * 10;
+  println("TX", lcds[input].transX);
+};
+
+VisEvent transRight = () -> {
+  lcds[input].transX += lcds[input].scale * 10;
+  println("TX", lcds[input].transX);
+};
+  
+VisEvent scaleUp = () -> {
+  lcds[input].scale += .5;
+  println("SCALE TV", input, lcds[input].scale);
+};
+
+VisEvent scaleDown = () -> {
+  lcds[input].scale -= .5;
+  println("SCALE TV", input, lcds[input].scale);
+};
+
+void handleCoded() {
+  if (keyCode == LEFT) transLeft.fire();
+  if (keyCode == RIGHT) transRight.fire();
+  if (keyCode == UP) scaleUp.fire();
+  if (keyCode == DOWN) scaleDown.fire();
+}
+
+
+
+
+
+
+
+    
