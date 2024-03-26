@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Collections;
 
-
 class FireFlies {
   ArrayList<FireFly> fireFlies = new ArrayList<FireFly>();
   PGraphics fg;
@@ -11,6 +10,7 @@ class FireFlies {
   float grassH = 1.8;
   int windDir = 1;
   float wind = 1;
+  boolean fliesOn = false;
   boolean grassOn = false;
   
   FireFlies(int w, int h) {
@@ -75,7 +75,7 @@ class FireFlies {
   }
   
   void display(PGraphics frame) {
-    if (true) {
+    if (fliesOn) {
       for (FireFly f : fireFlies) {
         f.update();
         f.relate();

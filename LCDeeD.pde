@@ -69,11 +69,15 @@ color slideTint = whiteDD;
 // Compositing Buffer
 PGraphics backBuffer;
 
+// Fonts
+PFont roboto;
+PFont robotoCB;
+PFont tetris;
+
 // Playback options
 boolean inDDon = false;
 boolean backgroundOn = false;
 boolean fireOn = false;
-boolean fliesOn = false;
 boolean hitoOn = false;
 boolean videoOn = false;
 boolean slidesOn = true;
@@ -159,13 +163,17 @@ void loadSlides(String group) {
 void setup() {
   size(1280, 720);
   frameRate(60);
-  //fullScreen();
+  //1fullScreen();
   
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
   lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
   lyrics.add(new String[] {"It's the Moon", "The Pink Moon", "And It's", "Rising"});
   lyric = lyrics.get(0);
   
+  tetris = createFont("fonts\\tetris.ttf", 18, true);
+  roboto = createFont("fonts\\Roboto-Bold.ttf", 16, true);
+  robotoCB = createFont("fonts\\RobotoCondensed-Bold.ttf", 16, true);
+
   slides = new HashMap<>();
   String[] show = new String[]{"Fire", "Moon", "Dev", "Phases", "Wiitch"};
   for (String g: show)
@@ -203,15 +211,57 @@ void setup() {
 }
 
 void loadEvents() {
-  visEvents.put('0', resetAll);
+  // BACK BUFFER
   visEvents.put('b', toggleBackground);
-  visEvents.put('d', toggleDebug);
+  visEvents.put('B', backgroundColorReset);
+  visEvents.put('a', randomTint);
+  visEvents.put('A', backgroundTint);
+  visEvents.put('c', pixelMode);
+  
+  // LYRICS
+  visEvents.put('j', nextLyric);
+  visEvents.put('k', toggleLyrics);
+  visEvents.put('K', lyricsChange);
+
+  // VISUALIZERS
+  visEvents.put('f', toggleFire);
   visEvents.put('h', toggleHito);
   visEvents.put('i', toggleInnerDD);
   visEvents.put('o', toggleFlies);
+  visEvents.put('O', toggleGrass);
   visEvents.put('p', toggleSchiff);
   visEvents.put('s', toggleSlides);
+  
+  // TV CONTROLS
+  //    ON/OFF
+  visEvents.put('1', selectTV_0);
+  visEvents.put('2', selectTV_1);
+  visEvents.put('3', selectTV_2);
+  visEvents.put('4', selectTV_3);
+  //    SELECT INPUT
+  visEvents.put('!', toggleTV_0);
+  visEvents.put('@', toggleTV_1);
+  visEvents.put('#', toggleTV_2);
+  visEvents.put('$', toggleTV_3);
+  //    INPUT OPTIONS
+  //          OVERSCAN
+  visEvents.put('.', overScanToggle);
+  visEvents.put('/', overScanColor);
+  visEvents.put('?', overScanColorReset); 
+  visEvents.put('8', overScanWidth); 
+  visEvents.put('*', overScanWidthReset); 
+  visEvents.put('9', overScanInterval); 
+  visEvents.put('(', overScanIntervalReset); 
+  //          SCALING
+  visEvents.put('=', scaleReset);
+  visEvents.put('+', transReset);
+  
+  // RESETS
+  visEvents.put('0', resetAll);
   visEvents.put(BACKSPACE, resetVis);
+  
+  // TOOLS
+  visEvents.put('d', toggleDebug);
   visEvents.put(ENTER, saveFrame);
 }
 
@@ -233,11 +283,12 @@ void draw() {
     backBuffer.push();
     backBuffer.noStroke();
     backBuffer.fill(0, 10);
-    backBuffer.rect(400, height/2 - 92, width-800, 144, 72);
-    backBuffer.textAlign(CENTER, TOP);
-    backBuffer.textSize(144);
+    backBuffer.rect(0, height/2-90, width, 180, 45);
+    backBuffer.textAlign(CENTER, CENTER);
+    backBuffer.textFont(tetris);
+    backBuffer.textSize(174);
     backBuffer.fill(255, 105, 180, 220);
-    backBuffer.text(lyric[word], 0, height/2 - 88, width, 150);
+    backBuffer.text(lyric[word], 0, 0, width, height);
     backBuffer.pop();
   }
 
@@ -252,7 +303,7 @@ void draw() {
   if (fireOn)
     fire.display(backBuffer);
   
-  if (fliesOn) {
+  if (flies.fliesOn || flies.grassOn) {
     //g.background(neon2);
     flies.display(backBuffer);
   }
@@ -310,7 +361,7 @@ void draw() {
       fill(greenDD);
       rect(0, indY+=indH, 40, indH);
     }
-    if (fliesOn) {    
+    if (flies.fliesOn) {    
       fill(whiteDD);
       rect(0, indY+=indH, 40, indH);
     }
@@ -341,35 +392,10 @@ void keyPressed() {
     visEvents.get(key).fire();
   }
   
-  if (key == '/' || key == '?') {
-    lcds[input].overScanColor = palette[(int)random(palette.length)];
-    if (key == '?') lcds[input].overScanColor = bgColor = black;
-    println(key, "TINT");
-  }
-  
   if (key == 'g') setSlideGroup("Dev");
   if (key == 'W') setSlideGroup("Moon");
-  if (key == 'w') setSlideGroup("Wiitch");
-  
+  if (key == 'w') setSlideGroup("Wiitch"); 
   if (key == 'L') lcds[input].logoOn = !lcds[input].logoOn;
-  
-  if (key == 'm' || key == 'M') {
-    fireOn = !fireOn;
-    if (fireOn)
-      setSlideGroup("Fire");
-    println(key, "FIRE", fireOn);
-  }
-
-  if (key == 'O') {
-    if (fliesOn)
-      flies.grassOn = !flies.grassOn;
-  }
-  
-  if (key == '.') {
-    lcds[input].overScanOn = !lcds[input].overScanOn;
-    println(key, "Overscan", input, lcds[input].overScanOn);
-  }
-
   if (key == 'e') {println(key, "DIEMODE:1"); dieMode = 1;}
   if (key == 'r') {println(key, "DIEMODE:2"); dieMode = 2;}
 
@@ -383,72 +409,12 @@ void keyPressed() {
     println("TY", lcds[input].transY);
   }
     
-  if (key >= '1' && key <= '4') {
-    String f = "" + key;
-    input = Integer.parseInt(f) - 1;
-    println(key, "INPUT", input);
-  }
-  
   if (key >= '5' && key <= '7') {
     String f = "" + key;
     lcds[input].bright = Integer.parseInt(f) - 5;
     println(key, "BRIGHT", input, lcds[input].bright);
   }
-  
-  if (key == '8') {
-    lcds[input].overScanInterval++;
-    println(key, "OVERSCAN INT", input, lcds[input].overScanInterval);
-  }
-
-  if (key == '*') {
-    lcds[input].overScanInterval = 2;
-    println(key, "OVERSCAN INT", input, lcds[input].overScanInterval);
-  }
-  
-  if (key == '9') {
-    lcds[input].overScanSize++;
-    println(key, "OVERSCAN SIZE", input, lcds[input].overScanSize);
-  }
-
-  if (key == '(') {
-    lcds[input].overScanSize = 2;
-    println(key, "OVERSCAN SIZE", input, lcds[input].overScanSize);
-  }
-
-  if (key == '=') {
-    lcds[input].scale = 1.0;
-    println("SCALE RESET", input, lcds[input].scale);
-  }
-
-  if (key == '+') {
-    lcds[input].transX = 0.0;
-    lcds[input].transY = 0.0;
-    println(key, "TRANS RESET", input, "(0,0)");
-  }
-
-  if (key == 'k') {
-    lyricsOn = !lyricsOn;
-    println(key, "LYRICS", lyricsOn);
-  }
-  
-  if (key == 'K') {
-    lyricChange();
-    println(key, "Lyric Change");
-  }
-  
-  if (key == 'j') {
-    word++;
-    if (word >= lyric.length) word = 0;
-  }
- 
-  if (key == 'c') {
-    subPixelDisclination++;
-    if (subPixelDisclination > 2)
-      subPixelDisclination = 0;
-    
-    println("PSD", 1 << subPixelDisclination);
-  }
-  
+     
   if (key == 'n') {
     connected = !connected;
     println(key, "INNERCONNECTED", connected);
@@ -460,23 +426,6 @@ void keyPressed() {
     println(key, "PIP", lcds[input].pipOn);
   }
   
-  if (key == '!') {
-    lcds[0].tvOn = !lcds[0].tvOn;
-    println(key, "TV/ON 0", lcds[input].tvOn);
-  }
-  if (key == '@') {
-    lcds[1].tvOn = !lcds[1].tvOn;
-    println(key, "TV/ON 1", lcds[input].tvOn);
-  }
-  if (key == '#') {
-    lcds[2].tvOn = !lcds[2].tvOn;
-    println(key, "TV/ON 2", lcds[input].tvOn);
-  }
-  if (key == '$') {
-    lcds[3].tvOn = !lcds[3].tvOn;
-    println(key, "TV/ON 3", lcds[input].tvOn);
-  }
-
   if (key == '-') {
     if (lcds[0]._width == width) {
       lcds[0].setResolution(width/2, height/2, 3);
@@ -492,12 +441,6 @@ void keyPressed() {
     }
   }
   
-  if (key == 'a' || key == 'A') {
-    slideTint = palette[(int)random(palette.length)];
-    if (key == 'A') bgColor = slideTint; else bgColor = black;
-    println(key, "TINT");
-  }
-  
   fire.keyPressed();  
 }
 
@@ -508,49 +451,77 @@ void lyricChange() {
 
 VisEvent toggleHito = () -> {
   hitoOn = !hitoOn;
-  println(key, "HITODAMA", hitoOn);
+  println("HITODAMA", hitoOn);
 };
 
 VisEvent toggleFlies = () -> {
-  fliesOn = !fliesOn;
-  if (fliesOn) {
+  flies.fliesOn = !flies.fliesOn;
+  if (flies.fliesOn) {
     slideNumber = lastPhase;
     setSlideGroup("Phases");
   }
+  println("FireFlies", flies.fliesOn);
+};
+
+VisEvent toggleGrass = () -> {
+  flies.grassOn = !flies.grassOn;
+  println("Grass", flies.grassOn);
 };
 
 VisEvent toggleInnerDD = () -> {
   inDDon = !inDDon;
-  println(key, "INNERDDEMON", inDDon);
+  println("INNERDDEMON", inDDon);
+};
+
+VisEvent toggleFire = () -> {
+  fireOn = !fireOn;
+  if (fireOn)
+    setSlideGroup("Fire");
+  println("FIRE", fireOn);
 };
 
 VisEvent toggleSchiff = () -> {
   schiffOn = !schiffOn;
-  println(key, "SCHIFFON", schiffOn);
+  println("SCHIFFON", schiffOn);
 };
 
 VisEvent toggleSlides = () -> {
   slidesOn = !slidesOn;
-  println(key, "SLIDES", slidesOn);
+  println("SLIDES", slidesOn);
 };
 
 VisEvent resetVis = () -> {
   slide = nextSlide(slideGroup);
   innerDD.reset((int)random(10,200));
   flies.hatch(int(random(50, 200)));
-  println("BACKSPACE", "Random Slide", "Reset", "Hatch");
+  println("Next Slide in " + slideGroup, "New InnerDD", "Hatch Flies");
 };
 
 VisEvent toggleDebug = () -> {
   debugOn = !debugOn;
-  println(key, "FPS", debugOn);
+  println("FPS", debugOn);
 };
 
 VisEvent toggleBackground = () -> {
   backgroundOn = !backgroundOn;
   for (int i = 0; i < lcds.length; i++)
     lcds[i].invalidate();
-  println(key, "BACKGROUND", backgroundOn);
+  println("BACKGROUND", backgroundOn);
+};
+
+VisEvent backgroundColorReset = () -> {
+  bgColor = black;
+  println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
+};
+
+VisEvent randomTint = () -> {
+  slideTint = palette[(int)random(palette.length)];
+  println("TINT", red(slideTint), green(slideTint), blue(slideTint));
+}; 
+
+VisEvent backgroundTint = () -> {
+  bgColor = slideTint;
+  println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
 };
 
 VisEvent resetAll = () -> {
@@ -563,18 +534,19 @@ VisEvent resetAll = () -> {
 };
 
 VisEvent saveFrame = () -> {
-  saveFrame("screenshots/LCDD#####.png");
-  println("ENTER", "SAVE FRAME");
+  String frameName = "screenshots/LCDD#####.png";
+  saveFrame(frameName);
+  println("SAVE FRAME", frameName);
 };
 
 VisEvent transLeft = () -> {
   lcds[input].transX -= lcds[input].scale * 10;
-  println("TX", lcds[input].transX);
+  println("TransX", lcds[input].transX);
 };
 
 VisEvent transRight = () -> {
   lcds[input].transX += lcds[input].scale * 10;
-  println("TX", lcds[input].transX);
+  println("TransX", lcds[input].transX);
 };
   
 VisEvent scaleUp = () -> {
@@ -587,17 +559,124 @@ VisEvent scaleDown = () -> {
   println("SCALE TV", input, lcds[input].scale);
 };
 
+VisEvent toggleLyrics = () -> {
+  lyricsOn = !lyricsOn;
+  println("LYRICS", lyricsOn);
+};
+
+VisEvent lyricsChange = () -> {
+  lyricChange();
+  println("Lyric Change");
+  printArray(lyric);
+};
+
+VisEvent nextLyric = () -> {
+  word++;
+  if (word >= lyric.length) word = 0;
+  println("Next Lyric->" + lyric[word]);
+};
+
+void toggleTV(int tv) {
+  lcds[tv].tvOn = !lcds[tv].tvOn;
+  println(key, "TV/ON" + tv, lcds[tv].tvOn);
+}
+
+VisEvent toggleTV_0 = () -> {
+  toggleTV(0);
+};
+
+VisEvent toggleTV_1 = () -> {
+  toggleTV(1);
+};
+
+VisEvent toggleTV_2 = () -> {
+  toggleTV(2);
+};
+
+VisEvent toggleTV_3 = () -> {
+  toggleTV(3);
+};
+
+void selectInput(int tv) {
+  input = tv;
+  println("SELECT INPUT", input);
+}
+
+VisEvent selectTV_0 = () -> {
+  selectInput(0);
+};
+
+VisEvent selectTV_1 = () -> {
+  selectInput(1);
+};
+
+VisEvent selectTV_2 = () -> {
+  selectInput(2);
+};
+
+VisEvent selectTV_3 = () -> {
+  selectInput(3);
+};
+
+VisEvent overScanColor = () -> {
+  color c = palette[(int)random(palette.length)];
+  lcds[input].overScanColor = c;
+  println("Overscan Color TV " + input, red(c), green(c), blue(c));
+};
+
+VisEvent overScanColorReset = () -> {
+  lcds[input].overScanColor = black;
+  println("Overscan Color Reset TV " + input);
+};
+
+VisEvent overScanWidth = () -> {
+  lcds[input].overScanSize++;
+  println("OVERSCAN WIDTH " + input, lcds[input].overScanSize);
+};
+
+VisEvent overScanWidthReset = () -> {
+  lcds[input].overScanSize = 1;
+  println("OVERSCAN WIDTH " + input, lcds[input].overScanSize);
+};
+
+VisEvent overScanInterval = () -> {
+  lcds[input].overScanInterval++;
+  println("OVERSCAN INTERVAL " + input, lcds[input].overScanInterval);
+};
+
+VisEvent overScanIntervalReset = () -> {
+  lcds[input].overScanInterval = 2;
+  println("OVERSCAN INTERVAL " + input, lcds[input].overScanInterval);
+};
+
+VisEvent overScanToggle = () -> {
+  lcds[input].overScanOn = !lcds[input].overScanOn;
+  println("Overscan TV", input, lcds[input].overScanOn);
+};
+
+VisEvent pixelMode = () -> {    
+  subPixelDisclination++;
+  if (subPixelDisclination > 2)
+    subPixelDisclination = 0;
+  
+  println("Pixel Mode", 1 << subPixelDisclination);
+};
+
+VisEvent scaleReset = () -> { 
+  lcds[input].scale = 1.0;
+  println("SCALE RESET TV", input, lcds[input].scale);
+};
+
+VisEvent transReset = () -> { 
+  lcds[input].transX = 0.0;
+  lcds[input].transY = 0.0;
+  println(key, "TRANS RESET TV", input, "(0,0)");
+};
+
+
 void handleCoded() {
   if (keyCode == LEFT) transLeft.fire();
   if (keyCode == RIGHT) transRight.fire();
   if (keyCode == UP) scaleUp.fire();
   if (keyCode == DOWN) scaleDown.fire();
 }
-
-
-
-
-
-
-
-    

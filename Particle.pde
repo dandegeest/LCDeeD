@@ -1,5 +1,5 @@
-int dieMode = 2;
-boolean connected = false;
+static int dieMode = 2;
+static boolean connected = false;
   
 class Particle {
   PVector p, v, a;
