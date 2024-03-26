@@ -328,61 +328,7 @@ void draw() {
   if (offCnt == 4) image(bImage, 0, 0);
   bImage = null; 
   
-  if (debugOn) {
-    push();
-    noStroke();
-    fill(0, 20);
-    rect(0, 0, 100, 24);
-    int indY = 50;
-    int indH = 10;
-    rect(0, indY, 50, 200);
-    
-    textAlign(LEFT, TOP);
-    fill(128, 255, 128);
-    textSize(24);
-    text("FPS:" + nf(frameRate, 0, 2), 0, 0, 200, 50);
-
-    noFill();
-    stroke(yellowDD);
-    strokeWeight(10);
-    line(0, indY, 40, indY);
-    indY = 60;
-    noStroke();
-    fill(slideTint == black ? color(255, 20) : slideTint);
-    rect(0, indY, 50, indH);
-    indY = 70;
-    
-    if (backgroundOn) {
-      fill(bgColor == black ? color(255, 20) : bgColor);
-      rect(0, indY, 50, indH);
-      indY+=indH;
-    }
-    if (slidesOn) {    
-      fill(greenDD);
-      rect(0, indY+=indH, 40, indH);
-    }
-    if (flies.fliesOn) {    
-      fill(whiteDD);
-      rect(0, indY+=indH, 40, indH);
-    }
-    if (hitoOn) {    
-      fill(blueDD);
-      rect(0, indY+=indH, 40, indH);
-    }
-    if (inDDon) {    
-      fill(pinkDD);
-      rect(0, indY+=indH, 40, indH);
-    }
-    if (schiffOn) {    
-      fill(neonDD);
-      rect(0, indY+=indH, 40, indH);
-    }
-    if (fireOn) {    
-      fill(palette[15]);
-      rect(0, indY+=indH, 40, indH);
-    }
-    pop();
-  }
+  drawDebug();
 }
 
 void keyPressed() {
@@ -679,4 +625,87 @@ void handleCoded() {
   if (keyCode == RIGHT) transRight.fire();
   if (keyCode == UP) scaleUp.fire();
   if (keyCode == DOWN) scaleDown.fire();
+}
+
+void drawDebug() {
+  if (debugOn) {
+    push();
+    noStroke();
+    fill(0, 20);
+    rect(0, 0, 100, 24);
+    int indY = 50;
+    int indH = 10;
+    rect(0, indY, 50, 200);  
+    textAlign(LEFT, TOP);
+    fill(128, 255, 128);
+    textSize(24);
+    text("FPS:" + nf(frameRate, 0, 2), 0, 0, 200, 50);
+
+    textAlign(LEFT, CENTER);
+    noFill();
+    stroke(yellowDD);
+    strokeWeight(10);
+    line(0, indY, 40, indY);
+    indY+=indH;
+    noStroke();
+    fill(slideTint == black ? color(255, 20) : slideTint);
+    rect(0, indY, 50, indH);
+    indY+=indH;   
+    textSize(10);
+    fill(bgColor);
+    rect(0, indY, 50, indH);
+    fill(bgColor == black ? whiteDD : black);
+    text("BG " + backgroundOn, 0, indY, 50, indH);
+    indY+=indH;
+
+    if (slidesOn) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("Slides", 0, indY, 50, indH);
+    }
+    indY+=indH;
+    if (flies.fliesOn) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("Flies", 0, indY, 50, indH);
+    }
+    indY+=indH;
+    if (flies.grassOn) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("Grass", 0, indY, 50, indH);
+    }
+    indY+=indH;
+    if (hitoOn) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("Hito", 0, indY, 50, indH);
+    }
+    indY+=indH;
+    if (inDDon) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("InnerDD", 0, indY, 50, indH);
+    }
+    indY+=indH;
+    if (schiffOn) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("Schiff", 0, indY, 50, indH);
+    }
+    indY+=indH;
+    if (fireOn) {    
+      fill(whiteDD);
+      rect(0, indY, 50, indH);
+      fill(black);
+      text("Fire", 0, indY, 50, indH);
+    }
+    pop();
+  }
 }
