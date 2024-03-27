@@ -3,10 +3,10 @@ ArrayList<Particle> particles = new ArrayList<Particle>();
 class InnerDD {
  
   InnerDD() {
-    reset(10);
+    spawn(10);
   }
   
-  void reset(int numP) {
+  void spawn(int numP) {
     color[] colors = new color[2];
     colors[0] = neonDD;
     colors[1] = yellowDD;

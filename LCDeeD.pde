@@ -98,6 +98,7 @@ float slideX = 0;
 
 void setSlideGroup(String group) {
   slideGroup = group;
+  println("Slides", group);
   timerFn.timeout();
 }
 
@@ -229,6 +230,8 @@ void loadEvents() {
   visEvents.put('h', toggleHito);
   visEvents.put('i', toggleInnerDD);
   visEvents.put('I', innerConnect);
+  visEvents.put('e', innerDDieMode1);
+  visEvents.put('E', innerDDieMode2);
   visEvents.put('o', toggleFlies);
   visEvents.put('O', toggleGrass);
   visEvents.put('p', toggleSchiff);
@@ -242,6 +245,7 @@ void loadEvents() {
   visEvents.put('4', selectTV_3);
   //    SELECT INPUT
   visEvents.put(TAB, splitScreen);
+  visEvents.put('T', togglePIP);
   //    SELECT INPUT
   visEvents.put('!', toggleTV_0);
   visEvents.put('@', toggleTV_1);
@@ -261,13 +265,24 @@ void loadEvents() {
   visEvents.put('=', scaleUp);
   visEvents.put('+', scaleReset);
   visEvents.put('_', transReset);
+  //          BRIGTHNESS
+  visEvents.put('7', briteMode0);
+  visEvents.put('8', briteMode1);
+  visEvents.put('9', briteMode2);
+  //          BRIGTHNESS
+  visEvents.put('L', toggleLogo);  
   
   // RESETS
   visEvents.put('0', resetAll);
   visEvents.put(BACKSPACE, resetVis);
   
+  // SLIDES
+  visEvents.put('g', slidesDev);
+  visEvents.put('w', slidesWiitch);
+  visEvents.put('W', slidesMoon);
+
   // TOOLS
-  visEvents.put('d', toggleDebug);
+  visEvents.put('D', toggleDebug);
   visEvents.put(ENTER, saveFrame);
 }
 
@@ -345,25 +360,6 @@ void keyPressed() {
   if (visEvents.containsKey(key)) {
     visEvents.get(key).fire();
   }
-  
-  if (key == 'g') setSlideGroup("Dev");
-  if (key == 'W') setSlideGroup("Moon");
-  if (key == 'w') setSlideGroup("Wiitch"); 
-  if (key == 'L') lcds[input].logoOn = !lcds[input].logoOn;
-  if (key == 'e') {println(key, "DIEMODE:1"); dieMode = 1;}
-  if (key == 'r') {println(key, "DIEMODE:2"); dieMode = 2;}
-  
-  if (key >= '5' && key <= '7') {
-    String f = "" + key;
-    lcds[input].bright = Integer.parseInt(f) - 5;
-    println(key, "BRIGHT", input, lcds[input].bright);
-  }
-     
-  if (key == 't') {
-    for (int i = 0; i < lcds.length; i++)
-      lcds[i].pipOn = !lcds[i].pipOn;
-    println(key, "PIP", lcds[input].pipOn);
-  }
     
   fire.keyPressed();  
 }
@@ -421,9 +417,11 @@ VisEvent innerConnect = () -> {
 
 VisEvent resetVis = () -> {
   slide = nextSlide(slideGroup);
-  innerDD.reset((int)random(10,200));
-  flies.hatch(int(random(50, 200)));
-  println("Next Slide in " + slideGroup, "New InnerDD", "Hatch Flies");
+  if (inDDon)
+    innerDD.spawn((int)random(10,200));
+  if (flies.fliesOn)
+    flies.hatch(int(random(50, 200)));
+  println("Next Slide in " + slideGroup, "Spawn InnerDD", "Hatch Flies");
 };
 
 VisEvent toggleDebug = () -> {
@@ -628,6 +626,54 @@ VisEvent splitScreen = () -> {
   }
 };
   
+VisEvent briteMode0 = () -> {
+  lcds[input].bright = 0;
+  println("BRIGHT", input, lcds[input].bright);
+};
+
+VisEvent briteMode1 = () -> {
+  lcds[input].bright = 1;
+  println("BRIGHT", input, lcds[input].bright);
+};
+
+VisEvent briteMode2 = () -> {
+  lcds[input].bright = 2;
+  println("BRIGHT", input, lcds[input].bright);
+};
+
+VisEvent togglePIP = () -> {
+  for (int i = 0; i < lcds.length; i++)
+    lcds[i].pipOn = !lcds[i].pipOn;
+  println("PIP", lcds[0].pipOn);
+};
+
+VisEvent toggleLogo = () -> { 
+  lcds[input].logoOn = !lcds[input].logoOn;
+  println("LOGO", input, lcds[input].logoOn);
+};
+
+VisEvent slidesDev = () -> {   
+  setSlideGroup("Dev");
+};
+
+VisEvent slidesWiitch = () -> {   
+  setSlideGroup("Wiitch");
+};
+
+VisEvent slidesMoon = () -> {   
+  setSlideGroup("Moon");
+};
+
+VisEvent innerDDieMode1 = () -> {   
+  innerDDieMode = 1;
+  println("INNERDDie", innerDDieMode);
+};
+
+VisEvent innerDDieMode2 = () -> {   
+  innerDDieMode = 2;
+  println("INNERDDie", innerDDieMode);
+};
+
 void handleCoded() {
   if (keyCode == LEFT) transLeft.fire();
   if (keyCode == RIGHT) transRight.fire();
@@ -637,17 +683,19 @@ void handleCoded() {
 
 void drawDebug() {
   if (debugOn) {
+    int indY = 20;
+    int indW = 50;
+    int indH = 10;
+
     push();
     noStroke();
     fill(0, 20);
-    rect(0, 0, 100, 24);
-    int indY = 50;
-    int indH = 10;
-    rect(0, indY, 50, 200);  
+    rect(0, 0, indW, 20);
+    rect(0, indY, 50, 150);  
     textAlign(LEFT, TOP);
     fill(128, 255, 128);
-    textSize(24);
-    text("FPS:" + nf(frameRate, 0, 2), 0, 0, 200, 50);
+    textSize(12);
+    text(nf(frameRate, 0, 2), 0, 0, 200, 50);
 
     textAlign(LEFT, CENTER);
     noFill();

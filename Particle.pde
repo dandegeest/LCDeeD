@@ -1,4 +1,4 @@
-static int dieMode = 2;
+static int innerDDieMode = 2;
 static boolean connected = false;
   
 class Particle {
@@ -31,12 +31,12 @@ class Particle {
     p.add(v);
     v.add(a);
     
-    if (dieMode == 2 && (frameCount % copySpan == 0 && r > 0.5 && random(1) < 0.6 && z < 5)) {
+    if (innerDDieMode == 2 && (frameCount % copySpan == 0 && r > 0.5 && random(1) < 0.6 && z < 5)) {
       particles.add(new Particle(p.copy(), v.copy().rotate(0.1), pColor, random(5,10)));
       alive = false;
     }
 
-    if (dieMode == 1 && (lastP.x == p.x || lastP.y == p.y)) {
+    if (innerDDieMode == 1 && (lastP.x == p.x || lastP.y == p.y)) {
       alive = false;
     }
     
