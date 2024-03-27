@@ -17,6 +17,7 @@ HashMap<String, ArrayList<Slide>> slides;
 ArrayList<String[]> lyrics = new ArrayList<>();
 String[] lyric;
 int word = 0;
+int lyricFade;
 
 TimerFunction timerFn;
 
@@ -227,6 +228,7 @@ void loadEvents() {
   visEvents.put('f', toggleFire);
   visEvents.put('h', toggleHito);
   visEvents.put('i', toggleInnerDD);
+  visEvents.put('I', innerConnect);
   visEvents.put('o', toggleFlies);
   visEvents.put('O', toggleGrass);
   visEvents.put('p', toggleSchiff);
@@ -239,22 +241,26 @@ void loadEvents() {
   visEvents.put('3', selectTV_2);
   visEvents.put('4', selectTV_3);
   //    SELECT INPUT
+  visEvents.put(TAB, splitScreen);
+  //    SELECT INPUT
   visEvents.put('!', toggleTV_0);
   visEvents.put('@', toggleTV_1);
   visEvents.put('#', toggleTV_2);
   visEvents.put('$', toggleTV_3);
   //    INPUT OPTIONS
   //          OVERSCAN
-  visEvents.put('.', overScanToggle);
+  visEvents.put('M', overScanToggle);
   visEvents.put('/', overScanColor);
   visEvents.put('?', overScanColorReset); 
-  visEvents.put('8', overScanWidth); 
-  visEvents.put('*', overScanWidthReset); 
-  visEvents.put('9', overScanInterval); 
-  visEvents.put('(', overScanIntervalReset); 
+  visEvents.put('<', overScanWidth); 
+  visEvents.put('>', overScanInterval); 
+  visEvents.put('.', overScanWidthReset); 
+  visEvents.put(',', overScanIntervalReset); 
   //          SCALING
-  visEvents.put('=', scaleReset);
-  visEvents.put('+', transReset);
+  visEvents.put('-', scaleDown);
+  visEvents.put('=', scaleUp);
+  visEvents.put('+', scaleReset);
+  visEvents.put('_', transReset);
   
   // RESETS
   visEvents.put('0', resetAll);
@@ -282,12 +288,14 @@ void draw() {
   if (lyricsOn) {
     backBuffer.push();
     backBuffer.noStroke();
-    backBuffer.fill(0, 10);
-    backBuffer.rect(0, height/2-90, width, 180, 45);
+    if ((lyricFade+=10) <= 260) {
+      backBuffer.fill(bgColor, 10);
+      backBuffer.rect(100, height/2-90, width-200, 180, 45);
+    }
     backBuffer.textAlign(CENTER, CENTER);
     backBuffer.textFont(tetris);
     backBuffer.textSize(174);
-    backBuffer.fill(255, 105, 180, 220);
+    backBuffer.fill(lerpColor(slideTint, yellowDD, .25), 240);
     backBuffer.text(lyric[word], 0, 0, width, height);
     backBuffer.pop();
   }
@@ -344,49 +352,19 @@ void keyPressed() {
   if (key == 'L') lcds[input].logoOn = !lcds[input].logoOn;
   if (key == 'e') {println(key, "DIEMODE:1"); dieMode = 1;}
   if (key == 'r') {println(key, "DIEMODE:2"); dieMode = 2;}
-
-  if (key == '<') {
-    lcds[input].transY -= lcds[input].scale * 10;
-    println("TY", lcds[input].transY);
-  }
-
-  if (key == '>') {
-    lcds[input].transY += lcds[input].scale * 10;
-    println("TY", lcds[input].transY);
-  }
-    
+  
   if (key >= '5' && key <= '7') {
     String f = "" + key;
     lcds[input].bright = Integer.parseInt(f) - 5;
     println(key, "BRIGHT", input, lcds[input].bright);
   }
      
-  if (key == 'n') {
-    connected = !connected;
-    println(key, "INNERCONNECTED", connected);
-  }
-
   if (key == 't') {
     for (int i = 0; i < lcds.length; i++)
       lcds[i].pipOn = !lcds[i].pipOn;
     println(key, "PIP", lcds[input].pipOn);
   }
-  
-  if (key == '-') {
-    if (lcds[0]._width == width) {
-      lcds[0].setResolution(width/2, height/2, 3);
-      for (int i = 0; i < lcds.length; i++)
-        lcds[i].tvOn = true;
-      println(key, "SPLIT/ON");
-    }
-    else {
-      lcds[0].setResolution(width, height, 3);
-      for (int i = 1; i < lcds.length; i++)
-        lcds[i].tvOn = false;
-      println(key, "SPLIT/OFF");
-    }
-  }
-  
+    
   fire.keyPressed();  
 }
 
@@ -434,6 +412,11 @@ VisEvent toggleSchiff = () -> {
 VisEvent toggleSlides = () -> {
   slidesOn = !slidesOn;
   println("SLIDES", slidesOn);
+};
+
+VisEvent innerConnect = () -> {
+  connected = !connected;
+  println(key, "INNERCONNECTED", connected);
 };
 
 VisEvent resetVis = () -> {
@@ -494,7 +477,17 @@ VisEvent transRight = () -> {
   lcds[input].transX += lcds[input].scale * 10;
   println("TransX", lcds[input].transX);
 };
-  
+
+VisEvent transUp = () -> {
+  lcds[input].transY -= lcds[input].scale * 10;
+  println("TY", lcds[input].transY);
+};
+
+VisEvent transDown = () -> {
+  lcds[input].transY += lcds[input].scale * 10;
+  println("TY", lcds[input].transY);
+};
+
 VisEvent scaleUp = () -> {
   lcds[input].scale += .5;
   println("SCALE TV", input, lcds[input].scale);
@@ -519,6 +512,7 @@ VisEvent lyricsChange = () -> {
 VisEvent nextLyric = () -> {
   word++;
   if (word >= lyric.length) word = 0;
+  lyricFade = 0;
   println("Next Lyric->" + lyric[word]);
 };
 
@@ -581,7 +575,7 @@ VisEvent overScanWidth = () -> {
 };
 
 VisEvent overScanWidthReset = () -> {
-  lcds[input].overScanSize = 1;
+  lcds[input].overScanSize = 2;
   println("OVERSCAN WIDTH " + input, lcds[input].overScanSize);
 };
 
@@ -591,7 +585,7 @@ VisEvent overScanInterval = () -> {
 };
 
 VisEvent overScanIntervalReset = () -> {
-  lcds[input].overScanInterval = 2;
+  lcds[input].overScanInterval = 3;
   println("OVERSCAN INTERVAL " + input, lcds[input].overScanInterval);
 };
 
@@ -619,12 +613,26 @@ VisEvent transReset = () -> {
   println(key, "TRANS RESET TV", input, "(0,0)");
 };
 
-
+VisEvent splitScreen = () -> {
+  if (lcds[0]._width == width) {
+    lcds[0].setResolution(width/2, height/2, 3);
+    for (int i = 0; i < lcds.length; i++)
+      lcds[i].tvOn = true;
+    println(key, "SPLIT/ON");
+  }
+  else {
+    lcds[0].setResolution(width, height, 3);
+    for (int i = 1; i < lcds.length; i++)
+      lcds[i].tvOn = false;
+    println(key, "SPLIT/OFF");
+  }
+};
+  
 void handleCoded() {
   if (keyCode == LEFT) transLeft.fire();
   if (keyCode == RIGHT) transRight.fire();
-  if (keyCode == UP) scaleUp.fire();
-  if (keyCode == DOWN) scaleDown.fire();
+  if (keyCode == UP) transUp.fire();
+  if (keyCode == DOWN) transDown.fire();
 }
 
 void drawDebug() {
