@@ -270,10 +270,7 @@ void loadEvents() {
   visEvents.put('=', scaleUp);
   visEvents.put('+', scaleReset);
   visEvents.put('_', transReset);
-  visEvents.put('z', centerTV_0);
-  visEvents.put('Z', centerTV_1);
-  visEvents.put('x', centerTV_2);
-  visEvents.put('X', centerTV_3);
+  visEvents.put('z', centerScaleTV);
   //          BRIGTHNESS
   visEvents.put('7', briteMode0);
   visEvents.put('8', briteMode1);
@@ -584,20 +581,9 @@ VisEvent selectTV_3 = () -> {
   selectInput(3);
 };
 
-VisEvent centerTV_0 = () -> {
-  lcds[0].centerScale = !lcds[0].centerScale;
-};
-
-VisEvent centerTV_1 = () -> {
-  lcds[1].centerScale = !lcds[1].centerScale;
-};
-
-VisEvent centerTV_2 = () -> {
-  lcds[2].centerScale = !lcds[2].centerScale;
-};
-
-VisEvent centerTV_3 = () -> {
-  lcds[3].centerScale = !lcds[3].centerScale;
+VisEvent centerScaleTV = () -> {
+  lcds[input].centerScale = !lcds[input].centerScale;
+  print("CENTER", input, lcds[input].centerScale);
 };
 
 VisEvent overScanColor = () -> {
