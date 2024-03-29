@@ -15,6 +15,7 @@ class LCDD extends Sprite {
   float scale = 1.0;
   float transX = 0.0;
   float transY = 0.0;
+  boolean centerScale = true;
   // Scanline Animation
   float scanInterval = 1;
   float scanLine = 0;
@@ -26,8 +27,8 @@ class LCDD extends Sprite {
   // Station logo
   PImage logo;
   boolean logoOn = false;
-  // Brightness Mode
-  int bright = 1;
+  // Luminosity Mode
+  int lumosMode = 0;
   // Overscan
   color overScanColor = blueDD;
   int overScanInterval = 10;
@@ -125,7 +126,7 @@ class LCDD extends Sprite {
             px.setRGB((slideTint >> 16) & 0xFF, (slideTint >> 8) & 0xFF, slideTint & 0xF, .5);
           }
           else {
-            switch (bright) {
+            switch (lumosMode) {
               case 0:
                 px.setRGB(r, g, b, y % 2 == 0 ? .5 : 1.0);
                 break;
@@ -215,27 +216,27 @@ class LCDD extends Sprite {
     }
      
     pushMatrix();
-    scale(scale);
+    if (centerScale) {
+      transX = -(_width * scale - _width)/2;
+      transY = -(_height * scale - _height)/2;
+    }
     translate(transX, transY);
+    scale(scale);
 
     if (scanInterval > 0)
       scanner();
       
     pinky();
     
-    //int c = 0;
     for (int i = redrawRange[0]; i <= redrawRange[1]; i++) {
       Pixel pixel = _pixels.get(i);
       if (pixel.dirty || fullRedraw) {
-        pixel.display();
-        //c++;
+          pixel.display();
       }
         
       pixel.dirty = false;
     }
     
-    //if (c > 0 && !fullRedraw)
-    //  println(c, "PIXELS SET");
     popMatrix();
     
     if (logo != null && logoOn) {

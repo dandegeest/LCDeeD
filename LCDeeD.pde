@@ -18,6 +18,7 @@ ArrayList<String[]> lyrics = new ArrayList<>();
 String[] lyric;
 int word = 0;
 int lyricFade;
+float lyricSize = 174;
 
 TimerFunction timerFn;
 
@@ -66,6 +67,7 @@ color[] palette = new color[]{
 
 color bgColor = black;
 color slideTint = whiteDD;
+color lyricColor = neonDD;
 
 // Compositing Buffer
 PGraphics backBuffer;
@@ -165,7 +167,7 @@ void loadSlides(String group) {
 void setup() {
   size(1280, 720);
   frameRate(60);
-  //1fullScreen();
+  fullScreen();
   
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
   lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
@@ -180,7 +182,7 @@ void setup() {
   String[] show = new String[]{"Fire", "Moon", "Dev", "Phases", "Wiitch"};
   for (String g: show)
     loadSlides(g);  
-  slideGroup = "Dev";
+  slideGroup = show[0];
   slide = randomSlide(slideGroup);
   
   lcds = new LCDD[4];
@@ -218,7 +220,8 @@ void loadEvents() {
   visEvents.put('B', backgroundColorReset);
   visEvents.put('a', randomTint);
   visEvents.put('A', backgroundTint);
-  visEvents.put('c', pixelMode);
+  visEvents.put('C', pixelMode);
+  visEvents.put('c', randomLyricColor);
   
   // LYRICS
   visEvents.put('j', nextLyric);
@@ -234,6 +237,8 @@ void loadEvents() {
   visEvents.put('E', innerDDieMode2);
   visEvents.put('o', toggleFlies);
   visEvents.put('O', toggleGrass);
+  visEvents.put('[', mowGrass);
+  visEvents.put(']', growGrass);
   visEvents.put('p', toggleSchiff);
   visEvents.put('s', toggleSlides);
   
@@ -265,6 +270,10 @@ void loadEvents() {
   visEvents.put('=', scaleUp);
   visEvents.put('+', scaleReset);
   visEvents.put('_', transReset);
+  visEvents.put('z', centerTV_0);
+  visEvents.put('Z', centerTV_1);
+  visEvents.put('x', centerTV_2);
+  visEvents.put('X', centerTV_3);
   //          BRIGTHNESS
   visEvents.put('7', briteMode0);
   visEvents.put('8', briteMode1);
@@ -277,11 +286,12 @@ void loadEvents() {
   visEvents.put(BACKSPACE, resetVis);
   
   // SLIDES
-  visEvents.put('g', slidesDev);
+  visEvents.put('G', slidesDev);
   visEvents.put('w', slidesWiitch);
   visEvents.put('W', slidesMoon);
-
-  // TOOLS
+  visEvents.put('P', togglePhases);
+  
+  // TOOL
   visEvents.put('D', toggleDebug);
   visEvents.put(ENTER, saveFrame);
 }
@@ -305,12 +315,12 @@ void draw() {
     backBuffer.noStroke();
     if ((lyricFade+=10) <= 260) {
       backBuffer.fill(bgColor, 10);
-      backBuffer.rect(100, height/2-90, width-200, 180, 45);
+      backBuffer.rect(0, height/2-lyricSize/2, width, lyricSize, lyricSize/4);
     }
     backBuffer.textAlign(CENTER, CENTER);
     backBuffer.textFont(tetris);
-    backBuffer.textSize(174);
-    backBuffer.fill(lerpColor(slideTint, yellowDD, .25), 240);
+    backBuffer.textSize(lyricSize);
+    backBuffer.fill(lyricColor, 255);
     backBuffer.text(lyric[word], 0, 0, width, height);
     backBuffer.pop();
   }
@@ -376,11 +386,12 @@ VisEvent toggleHito = () -> {
 
 VisEvent toggleFlies = () -> {
   flies.fliesOn = !flies.fliesOn;
-  if (flies.fliesOn) {
+  println("FireFlies", flies.fliesOn);
+};
+
+VisEvent togglePhases = () -> {
     slideNumber = lastPhase;
     setSlideGroup("Phases");
-  }
-  println("FireFlies", flies.fliesOn);
 };
 
 VisEvent toggleGrass = () -> {
@@ -446,6 +457,14 @@ VisEvent randomTint = () -> {
   println("TINT", red(slideTint), green(slideTint), blue(slideTint));
 }; 
 
+VisEvent randomLyricColor = () -> {
+  lyricColor = palette[(int)random(palette.length)];
+  if (lyricColor == black) {
+    lyricColor = color(random(255), random(255), random(255));
+  }
+  println("LYRIC COLOR", red(lyricColor), green(lyricColor), blue(lyricColor));
+}; 
+
 VisEvent backgroundTint = () -> {
   bgColor = slideTint;
   println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
@@ -458,6 +477,14 @@ VisEvent resetAll = () -> {
     lcds[i].transY = 0.0;
   }
   println("RESET");
+};
+
+VisEvent growGrass = () -> {
+  flies.grassHeight(flies.grassH-=.1);
+};
+
+VisEvent mowGrass = () -> {
+  flies.grassHeight(flies.grassH+=.1);
 };
 
 VisEvent saveFrame = () -> {
@@ -511,6 +538,7 @@ VisEvent nextLyric = () -> {
   word++;
   if (word >= lyric.length) word = 0;
   lyricFade = 0;
+  lyricSize = random(100, 300);
   println("Next Lyric->" + lyric[word]);
 };
 
@@ -554,6 +582,22 @@ VisEvent selectTV_2 = () -> {
 
 VisEvent selectTV_3 = () -> {
   selectInput(3);
+};
+
+VisEvent centerTV_0 = () -> {
+  lcds[0].centerScale = !lcds[0].centerScale;
+};
+
+VisEvent centerTV_1 = () -> {
+  lcds[1].centerScale = !lcds[1].centerScale;
+};
+
+VisEvent centerTV_2 = () -> {
+  lcds[2].centerScale = !lcds[2].centerScale;
+};
+
+VisEvent centerTV_3 = () -> {
+  lcds[3].centerScale = !lcds[3].centerScale;
 };
 
 VisEvent overScanColor = () -> {
@@ -627,18 +671,18 @@ VisEvent splitScreen = () -> {
 };
   
 VisEvent briteMode0 = () -> {
-  lcds[input].bright = 0;
-  println("BRIGHT", input, lcds[input].bright);
+  lcds[input].lumosMode = 0;
+  println("BRIGHT", input, lcds[input].lumosMode);
 };
 
 VisEvent briteMode1 = () -> {
-  lcds[input].bright = 1;
-  println("BRIGHT", input, lcds[input].bright);
+  lcds[input].lumosMode = 1;
+  println("BRIGHT", input, lcds[input].lumosMode);
 };
 
 VisEvent briteMode2 = () -> {
-  lcds[input].bright = 2;
-  println("BRIGHT", input, lcds[input].bright);
+  lcds[input].lumosMode = 2;
+  println("BRIGHT", input, lcds[input].lumosMode);
 };
 
 VisEvent togglePIP = () -> {

@@ -30,11 +30,16 @@ class FireFlies {
     }
   }
   
+  void grassHeight(float gh) {
+    grassH = gh;
+    grass.clear();
+  }
+  
   void drawGrass() {
     int gStep = 10;
     fg.beginDraw();
     fg.clear();
-    fg.fill(slideTint);
+    fg.fill(lerpColor(slideTint, color(55, 89, 55), .5));
     fg.noStroke();
     float gH = height / grassH;
     
