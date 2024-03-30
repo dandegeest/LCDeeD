@@ -22,6 +22,11 @@ float lyricSize = 174;
 
 TimerFunction timerFn;
 
+//Movies
+Movie movie;
+int movieNumber = 0;
+ArrayList<String> movieTitles = new ArrayList<>();
+
 // Events
 HashMap<Character, VisEvent> visEvents = new HashMap();
 
@@ -83,7 +88,6 @@ boolean backgroundOn = false;
 boolean fireOn = false;
 boolean hitoOn = false;
 boolean videoOn = false;
-boolean slidesOn = true;
 boolean debugOn = false;
 boolean lyricsOn = false;
 boolean schiffOn = false;
@@ -94,6 +98,8 @@ int input = 0;
 //Images
 String slideGroup;
 int slideNumber = 0;
+int slideLayer = 2;
+int slideBrighT = 40;
 int lastPhase = 0;
 PImage slide;
 float slideX = 0;
@@ -164,10 +170,20 @@ void loadSlides(String group) {
   println("Loaded Slide Group", group, slides.get(group).size());
 }
 
+void loadMovies() {
+  String moviePath = sketchPath("") + "videos" + "\\";
+  for (String fn: loadImageFolder(moviePath)) {
+    movieTitles.add(moviePath + fn);
+  }
+  
+  println("Loaded Movie Titles", movieTitles.size());
+}
+
+
 void setup() {
   size(1280, 720);
   frameRate(60);
-  fullScreen();
+  //fullScreen();
   
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
   lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
@@ -179,7 +195,7 @@ void setup() {
   robotoCB = createFont("fonts\\RobotoCondensed-Bold.ttf", 16, true);
 
   slides = new HashMap<>();
-  String[] show = new String[]{"Fire", "Moon", "Dev", "Phases", "Wiitch"};
+  String[] show = new String[]{"Dev", "Fire", "Moon", "Phases", "Wiitch"};
   for (String g: show)
     loadSlides(g);  
   slideGroup = show[0];
@@ -198,6 +214,11 @@ void setup() {
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   
   backBuffer = createGraphics(width, height);
+
+  loadMovies();
+  movie = new Movie(this, movieTitles.get(movieNumber));
+  movie.play();
+  movie.volume(0);
   
   hito = new Hitodama(width, height);
   flies = new FireFlies(width, height);
@@ -206,12 +227,17 @@ void setup() {
   schiff = new Schiffman(width, height);
 
   timerFn = () -> {
-    if (slidesOn) {
+    if (slideLayer > 0 && !movie.isPlaying()) {
       slide = nextSlide(slideGroup);
     }
   };
   
   loadEvents();
+}
+
+void movieEvent(Movie m) {
+  if (movie.isPlaying())
+    m.read();
 }
 
 void loadEvents() {
@@ -220,9 +246,9 @@ void loadEvents() {
   visEvents.put('B', backgroundColorReset);
   visEvents.put('a', randomTint);
   visEvents.put('A', backgroundTint);
-  visEvents.put('C', pixelMode);
+  visEvents.put(':', pixelMode);
   visEvents.put('c', randomLyricColor);
-  
+  visEvents.put('C', resetTint);  
   // LYRICS
   visEvents.put('j', nextLyric);
   visEvents.put('k', toggleLyrics);
@@ -288,6 +314,11 @@ void loadEvents() {
   visEvents.put('W', slidesMoon);
   visEvents.put('P', togglePhases);
   
+  // Movies
+  visEvents.put('u', rewindMovie);
+  visEvents.put('U', nextMovie);
+  
+  
   // TOOL
   visEvents.put('D', toggleDebug);
   visEvents.put(ENTER, saveFrame);
@@ -302,9 +333,14 @@ void draw() {
     backBuffer.background(bgColor); 
   }
 
-  if (slidesOn) {
-    backBuffer.tint(slideTint);
-    backBuffer.image(slide, slideX, 0);
+  if (slideLayer == 1) {
+    if (slideTint != whiteDD) {
+      backBuffer.tint(slideTint);
+    }
+    if (movie.isPlaying())
+      backBuffer.image(movie, 0, 0, width, height);
+    else
+      backBuffer.image(slide, slideX, 0);
   }
   
   if (lyricsOn) {
@@ -349,7 +385,12 @@ void draw() {
   for (int i = lcds.length - 1; i >= 0; i--) {
     if (lcds[i].tvOn) {
       bImage.resize(0, lcds[i].phRes);
-      lcds[i].sourceImage(bImage);
+      lcds[i].sourceImage(bImage, 0);
+      if (slideLayer == 2) {
+        PImage mi = movie.get();
+        mi.resize(0, lcds[i].phRes);
+        lcds[i].sourceImage(mi, slideBrighT);
+      }
       lcds[i].display();
     }
     else offCnt++;
@@ -367,7 +408,22 @@ void keyPressed() {
   if (visEvents.containsKey(key)) {
     visEvents.get(key).fire();
   }
-    
+  
+  if (key == 'y') {
+    slideBrighT+=5;
+    if (slideBrighT > 255)
+      slideBrighT = 255;
+    println("SLIDE BRIGHT", slideBrighT);
+  }
+
+  if (key == 'Y') {
+    slideBrighT-=5;
+    if (slideBrighT < 0)
+      slideBrighT = 0;
+    println("SLIDE BRIGHT", slideBrighT);
+  }
+  
+
   fire.keyPressed();  
 }
 
@@ -385,7 +441,6 @@ VisEvent toggleFlies = () -> {
   flies.fliesOn = !flies.fliesOn;
   println("FireFlies", flies.fliesOn);
 };
-
 VisEvent togglePhases = () -> {
     slideNumber = lastPhase;
     setSlideGroup("Phases");
@@ -414,8 +469,9 @@ VisEvent toggleSchiff = () -> {
 };
 
 VisEvent toggleSlides = () -> {
-  slidesOn = !slidesOn;
-  println("SLIDES", slidesOn);
+  slideLayer++;
+  if (slideLayer == 3) slideLayer = 0;
+  println("SLIDES", slideLayer);
 };
 
 VisEvent innerConnect = () -> {
@@ -445,12 +501,17 @@ VisEvent toggleBackground = () -> {
 };
 
 VisEvent backgroundColorReset = () -> {
-  bgColor = black;
+  bgColor = color((int)random(255), 0);//black;
   println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
 };
 
 VisEvent randomTint = () -> {
   slideTint = palette[(int)random(palette.length)];
+  println("TINT", red(slideTint), green(slideTint), blue(slideTint));
+}; 
+
+VisEvent resetTint = () -> {
+  slideTint = whiteDD;
   println("TINT", red(slideTint), green(slideTint), blue(slideTint));
 }; 
 
@@ -704,6 +765,25 @@ VisEvent innerDDieMode2 = () -> {
   println("INNERDDie", innerDDieMode);
 };
 
+
+VisEvent rewindMovie = () -> { 
+  movie.stop();
+  movie.jump(0);
+  movie.play();
+  println("Restart movie");
+};
+
+VisEvent nextMovie = () -> { 
+  movie.stop();
+  movie = null;
+  movieNumber++;
+  if (movieNumber == movieTitles.size()) movieNumber = 0;
+  movie = new Movie(this, movieTitles.get(movieNumber));
+  movie.volume(0);
+  movie.play();  
+  println("New movie", movieNumber, movieTitles.get(movieNumber));
+};
+
 void handleCoded() {
   if (keyCode == LEFT) transLeft.fire();
   if (keyCode == RIGHT) transRight.fire();
@@ -744,13 +824,20 @@ void drawDebug() {
     text("BG " + backgroundOn, 0, indY, 50, indH);
     indY+=indH;
 
-    if (slidesOn) {    
-      fill(whiteDD);
-      rect(0, indY, 50, indH);
-      fill(black);
-      text("Slides", 0, indY, 50, indH);
-    }
+    fill(whiteDD);
+    rect(0, indY, 50, indH);
+    fill(black);
+    text("S:" + slideLayer + "B:" + slideBrighT, 0, indY, 50, indH);
+    
     indY+=indH;
+
+    fill(whiteDD);
+    rect(0, indY, 50, indH);
+    fill(black);
+    text(nf(lcds[0].scale, 0, 2), 0, indY, 50, indH);
+    
+    indY+=indH;
+
     if (flies.fliesOn) {    
       fill(whiteDD);
       rect(0, indY, 50, indH);

@@ -95,15 +95,19 @@ class LCDD extends Sprite {
     
   void sourceImage(String fname) {
     source = loadImage(fname);
-    sourceImage(source);
-    //println("Loaded Image", source.width, source.height);
+    if (source.width > source.height)
+      source.resize(pwRes, 0);
+    else
+      source.resize(0, phRes);
+
+    sourceImage(source, 0);
+    println("----->", source.width, source.height);
+    println("Loaded Image", source.width, source.height);
   }
   
-  void sourceImage(PImage image) {
+  void sourceImage(PImage image, int brighT) {
     source = image;
     source.loadPixels();
-    //source.resize(pwRes, 0);
-    //println("----->", source.width, source.height);
     int xoff = (pwRes - source.width) / 2;
     for (int y = 0; y < phRes; y++) {
       for (int x = 0; x < pwRes; x++) {
@@ -112,18 +116,18 @@ class LCDD extends Sprite {
           int pixelColor = source.get(x, y);
           
           // Extract the RGB components
-          int a = (pixelColor >> 24) & 0xFF;
-          int r = (pixelColor >> 16) & 0xFF;
-          int g = (pixelColor >> 8) & 0xFF;
-          int b = pixelColor & 0xFF;
+          int a = (int)alpha(pixelColor);
+          int r = (int)red(pixelColor);
+          int g = (int)green(pixelColor);
+          int b = (int)blue(pixelColor);
           
           Pixel px = pixelAt(xoff + x, y);
           if (px == null) {
             continue;
           }
           
-          if (a == 0) {
-            px.setRGB((slideTint >> 16) & 0xFF, (slideTint >> 8) & 0xFF, slideTint & 0xF, .5);
+          if (a == 0 || (brighT > 0 && brightness(pixelColor) < brighT)) { //r < brighT && g < brighT && b < brighT)) {
+            continue;
           }
           else {
             switch (lumosMode) {
@@ -167,10 +171,10 @@ class LCDD extends Sprite {
         }
         
         // Extract the RGB components
-        int a = (pixelColor >> 24) & 0xFF;
-        int r = (pixelColor >> 16) & 0xFF;
-        int g = (pixelColor >> 8) & 0xFF;
-        int b = pixelColor & 0xFF;
+        int a = (int)alpha(pixelColor);
+        int r = (int)red(pixelColor);
+        int g = (int)green(pixelColor);
+        int b = (int)blue(pixelColor);
         
         Pixel px = l.get(xoff + x);
         if (px == null)
@@ -258,7 +262,7 @@ class LCDD extends Sprite {
 
     List<Pixel> l = getHLine(floor(scanLine));
     for (Pixel pixel : l) {
-      pixel.setRGB(255, 255, 255, random(1.5,1));
+      pixel.setRGB(255, 255, 255, random(.7,1));
     }  
     
     pvscanLine = floor(scanLine);

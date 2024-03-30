@@ -1,5 +1,5 @@
 static int subPixelDisclination = 2;
-static int subPixelAlpha = 240;
+static int subPixelAlpha = 255;
 
 class SubPixel extends Sprite {
   color pColor;
@@ -11,7 +11,7 @@ class SubPixel extends Sprite {
   
   void setColor(color c1) {
     pColor = c1;
-    pColor = (pColor & 0xFFFFFF) | (int(subPixelAlpha) << 24);
+    //pColor = (pColor & 0xFFFFFF) | (int(subPixelAlpha) << 24);
   }
   
   void display() { 

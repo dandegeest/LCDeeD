@@ -6,7 +6,6 @@ class Pixel extends Sprite {
   int rv = 0;
   int gv = 0;
   int bv = 0;
-  int alpha = 255;
   float lumos = 0.0;
   boolean dirty = true;
   
@@ -24,7 +23,7 @@ class Pixel extends Sprite {
     lcdd = lcd;
     setRGB(0, 0, 0, 1.0);
   }
-
+  
   void setRGB(int r, int g, int b, float l) {
     if (r == rv && g == gv && b == bv && l == lumos)
       return;
