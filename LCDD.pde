@@ -153,7 +153,7 @@ class LCDD extends Sprite {
     
     List<Pixel> l = getHLine(line);
     for (Pixel pixel : l) {
-      pixel.setRGB(0, 0, 0, random(.2, 1.0));
+      pixel.setRGB(0, 0, 0, 1.0);
     }
     
     if (source == null)
@@ -262,7 +262,7 @@ class LCDD extends Sprite {
 
     List<Pixel> l = getHLine(floor(scanLine));
     for (Pixel pixel : l) {
-      pixel.setRGB(255, 255, 255, random(.7,1));
+      pixel.setRGB(255, 255, 255, pixel.lumos);
     }  
     
     pvscanLine = floor(scanLine);

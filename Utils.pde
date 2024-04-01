@@ -3,24 +3,8 @@ import java.util.ArrayList;
 import processing.video.*;
 
 @FunctionalInterface
-interface TimerFunction {
-    void timeout();
-}
-
-@FunctionalInterface
 interface VisEvent {
     void fire();
-}
-
-int interval = 10 * 1000; // 1 Second Timer Interval
-int previousTime = 0;
-
-void timer(TimerFunction tfx) {
-  // Check if the specified interval has passed
-  if (millis() - previousTime > interval) {
-    previousTime = millis();
-    tfx.timeout();
-  }
 }
 
 int luminosity(int r, int g, int b, float lumos) {

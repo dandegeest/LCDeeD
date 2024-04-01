@@ -1,3 +1,5 @@
+import processing.video.*;
+
 // LCDeeD - An LCD TV rendering simulation for Processing
 // © Dan DeGeest 2024
 
@@ -20,15 +22,17 @@ int word = 0;
 int lyricFade;
 float lyricSize = 174;
 
-TimerFunction timerFn;
-
 //Movies
 Movie movie;
 int movieNumber = 0;
 ArrayList<String> movieTitles = new ArrayList<>();
 
+//Video
+Capture video;
+
 // Events
 HashMap<Character, VisEvent> visEvents = new HashMap();
+ArrayList<VisEvent> fx = new ArrayList();
 
 // Colors
 color reDD = color(222, 0, 0);
@@ -98,16 +102,20 @@ int input = 0;
 //Images
 String slideGroup;
 int slideNumber = 0;
-int slideLayer = 2;
+int slideLayer = 0;
 int slideBrighT = 40;
 int lastPhase = 0;
 PImage slide;
 float slideX = 0;
 
+// Timers
+Timer slideTimer;
+Timer fxTimer;
+
 void setSlideGroup(String group) {
   slideGroup = group;
-  println("Slides", group);
-  timerFn.timeout();
+  println("Slides", group, slideNumber);
+  slideTimer.tfx.timeout();
 }
 
 PImage nextSlide(String group) {
@@ -216,28 +224,38 @@ void setup() {
   backBuffer = createGraphics(width, height);
 
   loadMovies();
-  movie = new Movie(this, movieTitles.get(movieNumber));
-  movie.play();
-  movie.volume(0);
   
   hito = new Hitodama(width, height);
   flies = new FireFlies(width, height);
   fire = new LodeFire(width, height);
   innerDD = new InnerDD();
   schiff = new Schiffman(width, height);
-
-  timerFn = () -> {
-    if (slideLayer > 0 && !movie.isPlaying()) {
+  
+  loadEvents();
+  loadFX();
+  
+  slideTimer = new Timer();
+  slideTimer.interval = 10 * 1000;
+  slideTimer.tfx = () -> {
+    if (movie == null && video == null) {
       slide = nextSlide(slideGroup);
     }
   };
   
-  loadEvents();
+  fxTimer = new Timer();
+  fxTimer.interval = 3 * 1000;
+  fxTimer.tfx = () -> {
+    fx.get(floor(random(fx.size()))).fire();
+  };
 }
 
 void movieEvent(Movie m) {
   if (movie.isPlaying())
     m.read();
+}
+
+void captureEvent(Capture c) {
+  c.read();
 }
 
 void loadEvents() {
@@ -276,7 +294,7 @@ void loadEvents() {
   visEvents.put('4', selectTV_3);
   //    SELECT INPUT
   visEvents.put(TAB, splitScreen);
-  visEvents.put('T', togglePIP);
+  visEvents.put('t', togglePIP);
   //    SELECT INPUT
   visEvents.put('!', toggleTV_0);
   visEvents.put('@', toggleTV_1);
@@ -301,7 +319,7 @@ void loadEvents() {
   visEvents.put('7', briteMode0);
   visEvents.put('8', briteMode1);
   visEvents.put('9', briteMode2);
-  //          BRIGTHNESS
+  //          LOGO
   visEvents.put('L', toggleLogo);  
   
   // RESETS
@@ -317,15 +335,57 @@ void loadEvents() {
   // Movies
   visEvents.put('u', rewindMovie);
   visEvents.put('U', nextMovie);
+  visEvents.put('T', closeMovie);
   
+  // Video
+  visEvents.put('v', videoToggle);
   
+  // TRANSPARENCY
+  visEvents.put('y', slideBrighTInc);
+  visEvents.put('Y', slideBrighTDec);
+
   // TOOL
   visEvents.put('D', toggleDebug);
   visEvents.put(ENTER, saveFrame);
 }
 
+void loadFX() {
+  fx.add(overScanToggle);
+  fx.add(overScanColor);
+  fx.add(overScanColorReset); 
+  fx.add(overScanWidth); 
+  fx.add(overScanInterval); 
+  fx.add(overScanWidthReset); 
+  fx.add(overScanIntervalReset); 
+
+  fx.add(scaleDown);
+  fx.add(scaleUp);
+  fx.add(scaleReset);
+  fx.add(transReset);
+  fx.add(centerScaleTV);
+
+  fx.add(selectTV_0);
+  fx.add(selectTV_1);
+  fx.add(selectTV_2);
+  fx.add(selectTV_3);
+  
+  fx.add(toggleTV_0);
+  fx.add(toggleTV_1);
+  fx.add(toggleTV_2);
+  fx.add(toggleTV_3);
+  
+  fx.add(briteMode0);
+  fx.add(briteMode1);
+  fx.add(briteMode2);
+  
+  fx.add(slideBrighTInc);
+  fx.add(slideBrighTDec);
+
+}
+
 void draw() {  
-  timer(timerFn);
+  timer(slideTimer);
+  //timer(fxTimer);
   
   backBuffer.beginDraw();
  
@@ -337,8 +397,12 @@ void draw() {
     if (slideTint != whiteDD) {
       backBuffer.tint(slideTint);
     }
-    if (movie.isPlaying())
-      backBuffer.image(movie, 0, 0, width, height);
+    
+    if (video != null && video.isCapturing()) {
+      backBuffer.image(video, 0, 0, backBuffer.width, backBuffer.height);
+    }
+    else if (movie != null  && movie.isPlaying())
+      backBuffer.image(movie, 0, 0, backBuffer.width, backBuffer.height);
     else
       backBuffer.image(slide, slideX, 0);
   }
@@ -386,10 +450,21 @@ void draw() {
     if (lcds[i].tvOn) {
       bImage.resize(0, lcds[i].phRes);
       lcds[i].sourceImage(bImage, 0);
+      
+      //Overlay
       if (slideLayer == 2) {
-        PImage mi = movie.get();
-        mi.resize(0, lcds[i].phRes);
-        lcds[i].sourceImage(mi, slideBrighT);
+        PImage vi = null;
+        if (video != null && video.isCapturing()) {
+          //video.read();
+          vi = video.get();
+        }
+        else if (movie != null) {
+          vi = movie.get();
+        }
+        if (vi != null) {
+          vi.resize(0, lcds[i].phRes);
+          lcds[i].sourceImage(vi, slideBrighT);
+        }
       }
       lcds[i].display();
     }
@@ -407,22 +482,7 @@ void keyPressed() {
   
   if (visEvents.containsKey(key)) {
     visEvents.get(key).fire();
-  }
-  
-  if (key == 'y') {
-    slideBrighT+=5;
-    if (slideBrighT > 255)
-      slideBrighT = 255;
-    println("SLIDE BRIGHT", slideBrighT);
-  }
-
-  if (key == 'Y') {
-    slideBrighT-=5;
-    if (slideBrighT < 0)
-      slideBrighT = 0;
-    println("SLIDE BRIGHT", slideBrighT);
-  }
-  
+  }  
 
   fire.keyPressed();  
 }
@@ -441,6 +501,7 @@ VisEvent toggleFlies = () -> {
   flies.fliesOn = !flies.fliesOn;
   println("FireFlies", flies.fliesOn);
 };
+
 VisEvent togglePhases = () -> {
     slideNumber = lastPhase;
     setSlideGroup("Phases");
@@ -477,6 +538,51 @@ VisEvent toggleSlides = () -> {
 VisEvent innerConnect = () -> {
   connected = !connected;
   println(key, "INNERCONNECTED", connected);
+};
+
+VisEvent rewindMovie = () -> { 
+  if (movie == null) return;
+  movie.stop();
+  movie.jump(0);
+  movie.play();
+  movie.volume(0);
+  println("Restart movie");
+};
+
+VisEvent closeMovie = () -> {
+  if (movie  == null) return;
+  movie.stop();
+  movie = null;
+  println("Close movie", movieNumber, movieTitles.get(movieNumber));
+};
+
+VisEvent nextMovie = () -> { 
+  closeMovie.fire();
+  movieNumber++;
+  if (movieNumber == movieTitles.size()) movieNumber = 0;
+  movie = new Movie(this, movieTitles.get(movieNumber));
+  movie.play();  
+  movie.volume(0);
+  println("New movie", movieNumber, movieTitles.get(movieNumber));
+};
+
+VisEvent videoToggle = () -> {
+  if(video == null) {
+    String[] cameras = Capture.list();
+    printArray(cameras);
+    video = new Capture(this, lcds[0].pwRes, lcds[0].phRes, cameras[0]);
+    println("Video init", video.pixelWidth, video.pixelHeight);
+  }
+  videoOn = !videoOn;
+  
+  if (videoOn) {
+    closeMovie.fire();
+    video.start();
+  }
+  else {
+    video.stop();
+  }
+  println(key, "Video", videoOn);
 };
 
 VisEvent resetVis = () -> {
@@ -680,7 +786,7 @@ VisEvent overScanIntervalReset = () -> {
 
 VisEvent overScanToggle = () -> {
   lcds[input].overScanOn = !lcds[input].overScanOn;
-  println("Overscan TV", input, lcds[input].overScanOn);
+  println("Overscan TV " + input, lcds[input].overScanOn);
 };
 
 VisEvent pixelMode = () -> {    
@@ -765,24 +871,20 @@ VisEvent innerDDieMode2 = () -> {
   println("INNERDDie", innerDDieMode);
 };
 
-
-VisEvent rewindMovie = () -> { 
-  movie.stop();
-  movie.jump(0);
-  movie.play();
-  println("Restart movie");
+VisEvent slideBrighTInc = () -> {  
+  slideBrighT+=5;
+  if (slideBrighT > 255)
+    slideBrighT = 255;
+  println("SLIDE BRIGHT", slideBrighT);
 };
 
-VisEvent nextMovie = () -> { 
-  movie.stop();
-  movie = null;
-  movieNumber++;
-  if (movieNumber == movieTitles.size()) movieNumber = 0;
-  movie = new Movie(this, movieTitles.get(movieNumber));
-  movie.volume(0);
-  movie.play();  
-  println("New movie", movieNumber, movieTitles.get(movieNumber));
+VisEvent slideBrighTDec = () -> { 
+  slideBrighT-=5;
+  if (slideBrighT < 0)
+    slideBrighT = 0;
+  println("SLIDE BRIGHT", slideBrighT);
 };
+
 
 void handleCoded() {
   if (keyCode == LEFT) transLeft.fire();
