@@ -188,11 +188,14 @@ void loadMovies() {
 }
 
 
+String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
+
 void setup() {
   size(1280, 720);
   frameRate(60);
   //fullScreen();
   
+  lyrics.add(elements);
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
   lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
   lyrics.add(new String[] {"It's the Moon", "The Pink Moon", "And It's", "Rising"});
@@ -214,6 +217,7 @@ void setup() {
   lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch\\wiitch_logo2.png");
   lcds[0].logo.resize(0, 100);
   lcds[0].tvOn = true;
+  lcds[0].scanInterval = 2;
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
   lcds[1].scanInterval = 2;
@@ -261,16 +265,22 @@ void captureEvent(Capture c) {
 void loadEvents() {
   // BACK BUFFER
   visEvents.put('b', toggleBackground);
-  visEvents.put('B', backgroundColorReset);
   visEvents.put('a', randomTint);
   visEvents.put('A', backgroundTint);
+  visEvents.put('c', backgroundColorReset);
+  visEvents.put('C', resetTint);
+  
+  // PIXELS
   visEvents.put(':', pixelMode);
-  visEvents.put('c', randomLyricColor);
-  visEvents.put('C', resetTint);  
+  visEvents.put('7', briteMode0);
+  visEvents.put('8', briteMode1);
+  visEvents.put('9', briteMode2);
+
   // LYRICS
   visEvents.put('j', nextLyric);
+  visEvents.put('J', lyricsChange);
   visEvents.put('k', toggleLyrics);
-  visEvents.put('K', lyricsChange);
+  visEvents.put('K', randomLyricColor);
 
   // VISUALIZERS
   visEvents.put('f', toggleFire);
@@ -315,10 +325,6 @@ void loadEvents() {
   visEvents.put('+', scaleReset);
   visEvents.put('_', transReset);
   visEvents.put('z', centerScaleTV);
-  //          BRIGTHNESS
-  visEvents.put('7', briteMode0);
-  visEvents.put('8', briteMode1);
-  visEvents.put('9', briteMode2);
   //          LOGO
   visEvents.put('L', toggleLogo);  
   

@@ -230,7 +230,7 @@ class LCDD extends Sprite {
     if (scanInterval > 0)
       scanner();
       
-    pinky();
+    //pinky();
     
     for (int i = redrawRange[0]; i <= redrawRange[1]; i++) {
       Pixel pixel = _pixels.get(i);
