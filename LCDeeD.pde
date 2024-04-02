@@ -324,7 +324,7 @@ void loadEvents() {
   visEvents.put('=', scaleUp);
   visEvents.put('+', scaleReset);
   visEvents.put('_', transReset);
-  visEvents.put('z', centerScaleTV);
+  visEvents.put('Z', centerScaleTV);
   //          LOGO
   visEvents.put('L', toggleLogo);  
   
@@ -665,12 +665,12 @@ VisEvent saveFrame = () -> {
 
 VisEvent transLeft = () -> {
   lcds[input].transX -= lcds[input].scale * 10;
-  println("TransX", lcds[input].transX);
+  println("TX", lcds[input].transX);
 };
 
 VisEvent transRight = () -> {
   lcds[input].transX += lcds[input].scale * 10;
-  println("TransX", lcds[input].transX);
+  println("TX", lcds[input].transX);
 };
 
 VisEvent transUp = () -> {
@@ -756,7 +756,7 @@ VisEvent selectTV_3 = () -> {
 
 VisEvent centerScaleTV = () -> {
   lcds[input].centerScale = !lcds[input].centerScale;
-  print("CENTER", input, lcds[input].centerScale);
+  println("CENTER", input, lcds[input].centerScale);
 };
 
 VisEvent overScanColor = () -> {
@@ -890,7 +890,6 @@ VisEvent slideBrighTDec = () -> {
     slideBrighT = 0;
   println("SLIDE BRIGHT", slideBrighT);
 };
-
 
 void handleCoded() {
   if (keyCode == LEFT) transLeft.fire();

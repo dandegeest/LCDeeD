@@ -152,8 +152,11 @@ class LCDD extends Sprite {
       scanLine = line = 0;
     
     List<Pixel> l = getHLine(line);
-    for (Pixel pixel : l) {
-      pixel.setRGB(0, 0, 0, 1.0);
+    if (l != null) {
+      for (int i = 0; i < l.size(); i++) {
+        Pixel pixel = l.get(i);
+        pixel.setRGB(0, 0, 0, 1.0);
+      }
     }
     
     if (source == null)
@@ -165,8 +168,8 @@ class LCDD extends Sprite {
         int pixelColor = source.get(x, line);
         
         boolean lerped = false;
-        if (brightness(pixelColor) > 165) {
-          pixelColor = neonDD2; //lerpColor(pixelColor, neon2, .75);
+        if (brightness(pixelColor) > 145) {
+          pixelColor = neonDD;
           lerped = true;
         }
         
@@ -226,12 +229,10 @@ class LCDD extends Sprite {
     }
     translate(transX, transY);
     scale(scale);
-
+    
     if (scanInterval > 0)
       scanner();
       
-    //pinky();
-    
     for (int i = redrawRange[0]; i <= redrawRange[1]; i++) {
       Pixel pixel = _pixels.get(i);
       if (pixel.dirty || fullRedraw) {
@@ -261,37 +262,18 @@ class LCDD extends Sprite {
     rescanLine(pvscanLine);
 
     List<Pixel> l = getHLine(floor(scanLine));
-    for (Pixel pixel : l) {
-      pixel.setRGB(255, 255, 255, pixel.lumos);
-    }  
+    if (l != null) {
+      for (int i = 0; i < l.size(); i++) {
+        Pixel pixel = l.get(i);
+        pixel.setRGB(255, 255, 255, pixel.lumos);
+      }
+    }
     
     pvscanLine = floor(scanLine);
     scanLine += scanInterval;
     
     if (scanLine >= phRes) {
       scanLine = 0;
-    }
-  }
-
-  void pinky() {
-    int pi = (int)random(0, pwRes * phRes);
-
-    for (int i = 0; i < (int)random(25, 50); i++) {
-      
-      int pi2 = (int)random(0, 3 * pwRes);
-      Pixel pix = _pixels.get(min(pi + pi2, pwRes * phRes -1 ));
-      color pixelColor = color(pix.rv, pix.gv, pix.bv);
-      if (brightness(pixelColor) > 165) {
-        pixelColor = lerpColor(pixelColor, neonDD2, .9);
-      
-        // Extract the RGB components
-        //int a = (pixelColor >> 24) & 0xFF;
-        int r = (pixelColor >> 16) & 0xFF;
-        int g = (pixelColor >> 8) & 0xFF;
-        int b = pixelColor & 0xFF;
-        
-        pix.setRGB(r, g, b, 1);
-      }
     }
   }
 }
