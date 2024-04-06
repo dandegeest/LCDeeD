@@ -101,7 +101,7 @@ int input = 0;
 
 //Images
 String slideGroup;
-int slideNumber = 0;
+int slideNumber = -1;
 int slideLayer = 0;
 int slideBrighT = 40;
 int lastPhase = 0;
@@ -119,10 +119,12 @@ void setSlideGroup(String group) {
 }
 
 PImage nextSlide(String group) {
-  if (!slides.containsKey(group))
+  if (!slides.containsKey(group)) {
     return slide;
+  }
     
   ArrayList<Slide> imgGroup = slides.get(group);
+  slideNumber++;
   if (slideNumber >= imgGroup.size())
     slideNumber = 0;  
   
@@ -131,8 +133,10 @@ PImage nextSlide(String group) {
     loadSlideImage(slide);
   }
   
+  if (group == "Wiitch")
+    slide.image.resize(0, max(100, (int)random(100, height)));
+  
   slideX = random(width - slide.image.width);
-  slideNumber++;
   if (group == "Phases")
     lastPhase = slideNumber;
   return slide.image;
@@ -193,7 +197,7 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(60);
-  //fullScreen();
+  fullScreen();
   
   lyrics.add(elements);
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
@@ -210,7 +214,7 @@ void setup() {
   for (String g: show)
     loadSlides(g);  
   slideGroup = show[0];
-  slide = randomSlide(slideGroup);
+  slide = nextSlide(slideGroup);
   
   lcds = new LCDD[4];
   lcds[0] = new LCDD(0, 0, width, height, 3);
@@ -247,7 +251,7 @@ void setup() {
   };
   
   fxTimer = new Timer();
-  fxTimer.interval = 3 * 1000;
+  fxTimer.interval = 10 * 1000;
   fxTimer.tfx = () -> {
     fx.get(floor(random(fx.size()))).fire();
   };
@@ -356,6 +360,18 @@ void loadEvents() {
 }
 
 void loadFX() {
+  fx.add(toggleHito);
+  fx.add(toggleInnerDD);
+  fx.add(innerConnect);
+  fx.add(innerDDieMode1);
+  fx.add(innerDDieMode2);
+  fx.add(toggleFlies);
+  fx.add(toggleGrass);
+  fx.add(mowGrass);
+  fx.add(growGrass);
+  fx.add(toggleSchiff);
+  fx.add(toggleSlides);
+
   fx.add(overScanToggle);
   fx.add(overScanColor);
   fx.add(overScanColorReset); 
@@ -366,32 +382,25 @@ void loadFX() {
 
   fx.add(scaleDown);
   fx.add(scaleUp);
-  fx.add(scaleReset);
-  fx.add(transReset);
-  fx.add(centerScaleTV);
 
-  fx.add(selectTV_0);
-  fx.add(selectTV_1);
-  fx.add(selectTV_2);
-  fx.add(selectTV_3);
-  
-  fx.add(toggleTV_0);
-  fx.add(toggleTV_1);
-  fx.add(toggleTV_2);
-  fx.add(toggleTV_3);
-  
   fx.add(briteMode0);
   fx.add(briteMode1);
   fx.add(briteMode2);
   
   fx.add(slideBrighTInc);
   fx.add(slideBrighTDec);
-
+  
+  fx.add(slidesWiitch);
+  fx.add(slidesMoon);
+  fx.add(togglePhases);
+  
+  fx.add(randomTint);
+  fx.add(backgroundTint);
 }
 
-void draw() {  
+void draw() { 
   timer(slideTimer);
-  //timer(fxTimer);
+  timer(fxTimer);
   
   backBuffer.beginDraw();
  
@@ -901,14 +910,14 @@ void handleCoded() {
 void drawDebug() {
   if (debugOn) {
     int indY = 20;
-    int indW = 50;
+    int indW = 60;
     int indH = 10;
 
     push();
     noStroke();
     fill(0, 20);
     rect(0, 0, indW, 20);
-    rect(0, indY, 50, 150);  
+    rect(0, indY, indW, 150);  
     textAlign(LEFT, TOP);
     fill(128, 255, 128);
     textSize(12);
@@ -922,70 +931,131 @@ void drawDebug() {
     indY+=indH;
     noStroke();
     fill(slideTint == black ? color(255, 20) : slideTint);
-    rect(0, indY, 50, indH);
+    rect(0, indY, indW, indH);
     indY+=indH;   
     textSize(10);
     fill(bgColor);
-    rect(0, indY, 50, indH);
+    rect(0, indY, indW, indH);
     fill(bgColor == black ? whiteDD : black);
-    text("BG " + backgroundOn, 0, indY, 50, indH);
+    text("BG " + backgroundOn, 0, indY, indW, indH);
     indY+=indH;
 
     fill(whiteDD);
-    rect(0, indY, 50, indH);
+    rect(0, indY, indW, indH);
     fill(black);
-    text("S:" + slideLayer + "B:" + slideBrighT, 0, indY, 50, indH);
+    text("S:" + slideLayer + " B:" + slideBrighT, 0, indY, indW, indH);
     
     indY+=indH;
-
     fill(whiteDD);
-    rect(0, indY, 50, indH);
+    rect(0, indY, indW, indH);
     fill(black);
-    text(nf(lcds[0].scale, 0, 2), 0, indY, 50, indH);
+    text("Z:" + nf(lcds[input].scale, 0, 2), 0, indY, indW, indH);
+
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text("X:" + nf(lcds[input].transX, 0, 2), 0, indY, indW, indH);
     
     indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text("Y:" + nf(lcds[input].transY, 0, 2), 0, indY, indW, indH);
 
+    indY+=indH;
     if (flies.fliesOn) {    
       fill(whiteDD);
-      rect(0, indY, 50, indH);
+      rect(0, indY, indW, indH);
       fill(black);
-      text("Flies", 0, indY, 50, indH);
+      text("Flies", 0, indY, indW, indH);
     }
     indY+=indH;
     if (flies.grassOn) {    
       fill(whiteDD);
-      rect(0, indY, 50, indH);
+      rect(0, indY, indW, indH);
       fill(black);
-      text("Grass", 0, indY, 50, indH);
+      text("Grass", 0, indY, indW, indH);
     }
     indY+=indH;
     if (hitoOn) {    
       fill(whiteDD);
-      rect(0, indY, 50, indH);
+      rect(0, indY, indW, indH);
       fill(black);
-      text("Hito", 0, indY, 50, indH);
+      text("Hito", 0, indY, indW, indH);
     }
     indY+=indH;
     if (inDDon) {    
       fill(whiteDD);
-      rect(0, indY, 50, indH);
+      rect(0, indY, indW, indH);
       fill(black);
-      text("InnerDD", 0, indY, 50, indH);
+      text("InnerDD", 0, indY, indW, indH);
     }
     indY+=indH;
     if (schiffOn) {    
       fill(whiteDD);
-      rect(0, indY, 50, indH);
+      rect(0, indY, indW, indH);
       fill(black);
-      text("Schiff", 0, indY, 50, indH);
+      text("Schiff", 0, indY, indW, indH);
     }
     indY+=indH;
     if (fireOn) {    
       fill(whiteDD);
-      rect(0, indY, 50, indH);
+      rect(0, indY, indW, indH);
       fill(black);
-      text("Fire", 0, indY, 50, indH);
+      text("Fire", 0, indY, indW, indH);
     }
+    
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(slideGroup + ":" + nf(slideNumber), 0, indY, indW, indH);
+
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text("Input:" + input, 0, indY, indW, indH);
+    
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text("PDisc:" + (1 << subPixelDisclination), 0, indY, indW, indH);
+    
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(lyricColor);
+    text(lyric[word], 0, indY, indW, indH);
+    
+    indY+=indH;   
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    for (int i = 0; i < 4; i++) {    
+      if (lcds[i].overScanOn) {
+        fill(lcds[i].overScanColor);
+        rect(i * indW/4, indY, indW/4, indH);
+      }
+    }
+    
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    for (int i = 0; i < 4; i++) {    
+      fill(lcds[i].overScanColor);
+      text(nf(lcds[i].lumosMode), i * indW/4, indY, indW/4, indH);
+    }
+
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    for (int i = 0; i < 4; i++) {    
+      fill(black);
+      text(lcds[i].centerScale ? "|<>|" : "|__|", i * indW/4, indY, indW/4, indH);
+    }
+
     pop();
   }
 }

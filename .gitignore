@@ -9,3 +9,6 @@ application.windows64
 application.macosx
 out
 *.mp4
+lib/
+java/
+LCDeeD.exe
