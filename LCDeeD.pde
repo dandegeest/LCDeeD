@@ -225,9 +225,15 @@ void setup() {
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
   lcds[1].scanInterval = 2;
+  lcds[1].overScanColor = black;
+  lcds[1].overScanOn = true;
   lcds[2] = new LCDD(0, height/2, width/2, height/2, 3);
   lcds[2].scanInterval = .5;
+  lcds[2].overScanColor = black;
+  lcds[2].overScanOn = true;
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
+  lcds[3].overScanColor = black;
+  lcds[3].overScanOn = true;
   
   backBuffer = createGraphics(width, height);
 
@@ -253,6 +259,7 @@ void setup() {
   fxTimer = new Timer();
   fxTimer.interval = 10 * 1000;
   fxTimer.tfx = () -> {
+    input = 0;
     fx.get(floor(random(fx.size()))).fire();
   };
 }
@@ -396,6 +403,11 @@ void loadFX() {
   
   fx.add(randomTint);
   fx.add(backgroundTint);
+  
+  fx.add(nextLyric);
+  fx.add(lyricsChange);
+  fx.add(toggleLyrics);
+  fx.add(randomLyricColor);
 }
 
 void draw() { 
@@ -618,6 +630,11 @@ VisEvent toggleBackground = () -> {
   backgroundOn = !backgroundOn;
   for (int i = 0; i < lcds.length; i++)
     lcds[i].invalidate();
+    
+  if (backgroundOn == false) {
+    backBuffer.clear();  // Clear all pixels to transparent
+    backBuffer.background(0, 0, 0, 0); 
+  }
   println("BACKGROUND", backgroundOn);
 };
 
