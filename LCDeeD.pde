@@ -197,7 +197,7 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(60);
-  fullScreen();
+  //fullScreen();
   
   lyrics.add(elements);
   lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
@@ -229,10 +229,10 @@ void setup() {
   lcds[1].overScanOn = true;
   lcds[2] = new LCDD(0, height/2, width/2, height/2, 3);
   lcds[2].scanInterval = .5;
-  lcds[2].overScanColor = black;
+  lcds[2].overScanColor = whiteDD;
   lcds[2].overScanOn = true;
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
-  lcds[3].overScanColor = black;
+  lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
   
   backBuffer = createGraphics(width, height);
@@ -259,8 +259,10 @@ void setup() {
   fxTimer = new Timer();
   fxTimer.interval = 10 * 1000;
   fxTimer.tfx = () -> {
+    int pInput = input;
     input = 0;
     fx.get(floor(random(fx.size()))).fire();
+    input = pInput;
   };
 }
 
@@ -1006,7 +1008,7 @@ void drawDebug() {
       fill(whiteDD);
       rect(0, indY, indW, indH);
       fill(black);
-      text("InnerDD", 0, indY, indW, indH);
+      text("InnDD:" + innerDDieMode + ":" + connected, 0, indY, indW, indH);
     }
     indY+=indH;
     if (schiffOn) {    
@@ -1039,7 +1041,7 @@ void drawDebug() {
     fill(whiteDD);
     rect(0, indY, indW, indH);
     fill(black);
-    text("PDisc:" + (1 << subPixelDisclination), 0, indY, indW, indH);
+    text("DISC:" + (1 << subPixelDisclination), 0, indY, indW, indH);
     
     indY+=indH;
     fill(whiteDD);
@@ -1061,7 +1063,7 @@ void drawDebug() {
     fill(whiteDD);
     rect(0, indY, indW, indH);
     for (int i = 0; i < 4; i++) {    
-      fill(lcds[i].overScanColor);
+      fill(black);
       text(nf(lcds[i].lumosMode), i * indW/4, indY, indW/4, indH);
     }
 
