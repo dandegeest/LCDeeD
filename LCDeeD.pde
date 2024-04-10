@@ -20,6 +20,8 @@ ArrayList<String[]> lyrics = new ArrayList<>();
 String[] lyric;
 int word = 0;
 int lyricFade;
+PFont[] lyricFonts;
+int lyricFont = 0;
 float lyricSize = 174;
 
 //Movies
@@ -80,11 +82,6 @@ color lyricColor = neonDD;
 
 // Compositing Buffer
 PGraphics backBuffer;
-
-// Fonts
-PFont roboto;
-PFont robotoCB;
-PFont tetris;
 
 // Playback options
 boolean inDDon = false;
@@ -171,7 +168,7 @@ PImage loadSlideImage(Slide slide) {
 
 void loadSlides(String group) {
   ArrayList<Slide> slideInfo = new ArrayList<>();
-  String imagePath = sketchPath("") + "images" + group + "\\";
+  String imagePath = sketchPath("") + "images" + group + "/";
   for (String fn: loadImageFolder(imagePath)) {
     Slide s = new Slide();
     s.filePath = imagePath + fn;
@@ -183,7 +180,7 @@ void loadSlides(String group) {
 }
 
 void loadMovies() {
-  String moviePath = sketchPath("") + "videos" + "\\";
+  String moviePath = sketchPath("") + "videos" + "/";
   for (String fn: loadImageFolder(moviePath)) {
     movieTitles.add(moviePath + fn);
   }
@@ -205,9 +202,10 @@ void setup() {
   lyrics.add(new String[] {"It's the Moon", "The Pink Moon", "And It's", "Rising"});
   lyric = lyrics.get(0);
   
-  tetris = createFont("fonts\\tetris.ttf", 18, true);
-  roboto = createFont("fonts\\Roboto-Bold.ttf", 16, true);
-  robotoCB = createFont("fonts\\RobotoCondensed-Bold.ttf", 16, true);
+  lyricFonts = new PFont[3];
+  lyricFonts[0] = createFont("fonts/tetris.ttf", 18, true);
+  lyricFonts[1] = createFont("fonts/Roboto-Bold.ttf", 18, true);
+  lyricFonts[2] = createFont("fonts/mocha.ttf", 18, true);
 
   slides = new HashMap<>();
   String[] show = new String[]{"Dev", "Fire", "Moon", "Phases", "Wiitch"};
@@ -218,7 +216,7 @@ void setup() {
   
   lcds = new LCDD[4];
   lcds[0] = new LCDD(0, 0, width, height, 3);
-  lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch\\wiitch_logo2.png");
+  lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
   lcds[0].logo.resize(0, 100);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
@@ -294,6 +292,7 @@ void loadEvents() {
   visEvents.put('J', lyricsChange);
   visEvents.put('k', toggleLyrics);
   visEvents.put('K', randomLyricColor);
+  visEvents.put('l', incLyricFont);
 
   // VISUALIZERS
   visEvents.put('f', toggleFire);
@@ -444,7 +443,7 @@ void draw() {
       backBuffer.rect(0, height/2-lyricSize/2, width, lyricSize, lyricSize/4);
     }
     backBuffer.textAlign(CENTER, CENTER);
-    backBuffer.textFont(tetris);
+    backBuffer.textFont(lyricFonts[lyricFont]);
     backBuffer.textSize(lyricSize);
     backBuffer.fill(lyricColor, 255);
     backBuffer.text(lyric[word], 0, 0, width, height);
@@ -739,6 +738,12 @@ VisEvent nextLyric = () -> {
   lyricSize = random(100, 300);
   println("Next Lyric->" + lyric[word]);
 };
+
+VisEvent incLyricFont = () -> {
+  lyricFont++;
+  if (lyricFont == lyricFonts.length) lyricFont = 0;
+};
+
 
 void toggleTV(int tv) {
   lcds[tv].tvOn = !lcds[tv].tvOn;
