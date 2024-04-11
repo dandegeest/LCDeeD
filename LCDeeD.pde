@@ -194,12 +194,13 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(60);
-  //fullScreen();
+  cursor(loadImage(sketchPath("") + "cursor.png"), 0, 0);
+  fullScreen();
   
-  lyrics.add(elements);
-  lyrics.add(new String[] {"Love", "Fire", "Fortress", "Light", "Pink Moon"});
+  lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
+  lyrics.add(new String[] {"Love", "Is A", "Fortress", "OF Light", "COME", "INSIDE"});
   lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
-  lyrics.add(new String[] {"It's the Moon", "The Pink Moon", "And It's", "Rising"});
+  lyrics.add(elements);
   lyric = lyrics.get(0);
   
   lyricFonts = new PFont[3];
@@ -345,6 +346,7 @@ void loadEvents() {
   visEvents.put(BACKSPACE, resetVis);
   
   // SLIDES
+  visEvents.put('g', slidesFire);
   visEvents.put('G', slidesDev);
   visEvents.put('w', slidesWiitch);
   visEvents.put('W', slidesMoon);
@@ -377,8 +379,8 @@ void loadFX() {
   fx.add(toggleGrass);
   fx.add(mowGrass);
   fx.add(growGrass);
-  fx.add(toggleSchiff);
-  fx.add(toggleSlides);
+  //fx.add(toggleSchiff);
+  //fx.add(toggleSlides);
 
   fx.add(overScanToggle);
   fx.add(overScanColor);
@@ -398,9 +400,9 @@ void loadFX() {
   fx.add(slideBrighTInc);
   fx.add(slideBrighTDec);
   
-  fx.add(slidesWiitch);
-  fx.add(slidesMoon);
-  fx.add(togglePhases);
+  //fx.add(slidesWiitch);
+  //fx.add(slidesMoon);
+  //fx.add(togglePhases);
   
   fx.add(randomTint);
   fx.add(backgroundTint);
@@ -409,6 +411,8 @@ void loadFX() {
   fx.add(lyricsChange);
   fx.add(toggleLyrics);
   fx.add(randomLyricColor);
+  
+  fx.add(randomSchiff);
 }
 
 void draw() { 
@@ -489,6 +493,7 @@ void draw() {
         else if (movie != null) {
           vi = movie.get();
         }
+        else vi = schiff.fg.get();
         if (vi != null) {
           vi.resize(0, lcds[i].phRes);
           lcds[i].sourceImage(vi, slideBrighT);
@@ -547,8 +552,6 @@ VisEvent toggleInnerDD = () -> {
 
 VisEvent toggleFire = () -> {
   fireOn = !fireOn;
-  if (fireOn)
-    setSlideGroup("Fire");
   println("FIRE", fireOn);
 };
 
@@ -735,7 +738,7 @@ VisEvent nextLyric = () -> {
   word++;
   if (word >= lyric.length) word = 0;
   lyricFade = 0;
-  lyricSize = random(100, 300);
+  lyricSize = random(100, 200);
   println("Next Lyric->" + lyric[word]);
 };
 
@@ -744,6 +747,11 @@ VisEvent incLyricFont = () -> {
   if (lyricFont == lyricFonts.length) lyricFont = 0;
 };
 
+VisEvent randomSchiff = () -> {
+  if (!schiffOn) return;
+  schiff.setLevel((int)random(width/2));
+  println("RND SCHIFF", schiff.tLevel);
+};
 
 void toggleTV(int tv) {
   lcds[tv].tvOn = !lcds[tv].tvOn;
@@ -892,6 +900,10 @@ VisEvent slidesDev = () -> {
   setSlideGroup("Dev");
 };
 
+VisEvent slidesFire = () -> {   
+  setSlideGroup("Fire");
+};
+
 VisEvent slidesWiitch = () -> {   
   setSlideGroup("Wiitch");
 };
@@ -929,6 +941,10 @@ void handleCoded() {
   if (keyCode == RIGHT) transRight.fire();
   if (keyCode == UP) transUp.fire();
   if (keyCode == DOWN) transDown.fire();
+}
+
+void mousePressed() {
+  schiff.setLevel(min(mouseX, width/2));
 }
 
 void drawDebug() {
@@ -1020,7 +1036,7 @@ void drawDebug() {
       fill(whiteDD);
       rect(0, indY, indW, indH);
       fill(black);
-      text("Schiff", 0, indY, indW, indH);
+      text("Schiff :" + schiff.tLevel, 0, indY, indW, indH);
     }
     indY+=indH;
     if (fireOn) {    
