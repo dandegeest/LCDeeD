@@ -197,7 +197,7 @@ class LCDD extends Sprite {
   }
 
   void invalidate() {
-    redrawRange = new int[] { 0, (pwRes * phRes) -1 };
+    redrawRange = new int[] { 0, (pwRes * phRes) - 1 };
     fullRedraw = true;
   }
   

@@ -194,7 +194,7 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(60);
-  cursor(loadImage(sketchPath("") + "cursor.png"), 0, 0);
+  cursor(loadImage(sketchPath("") + "wcursor.png"), 0, 0);
   fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
