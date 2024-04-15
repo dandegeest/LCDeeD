@@ -36,6 +36,9 @@ Capture video;
 HashMap<Character, VisEvent> visEvents = new HashMap();
 ArrayList<VisEvent> fx = new ArrayList();
 
+//Effigy
+boolean effigyOn = false;
+
 // Colors
 color reDD = color(222, 0, 0);
 color greenDD = color(0, 222, 0);
@@ -194,8 +197,8 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(60);
-  cursor(loadImage(sketchPath("") + "wcursor.png"), 0, 0);
-  fullScreen();
+  //cursor(loadImage(sketchPath("") + "wcursor.png"), 0, 0);
+  //fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
   lyrics.add(new String[] {"Love", "Is A", "Fortress", "OF Light", "COME", "INSIDE"});
@@ -221,19 +224,31 @@ void setup() {
   lcds[0].logo.resize(0, 100);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
+  
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
-  lcds[1].scanInterval = 2;
+  lcds[1].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[1].logo.resize(0, 100);
+  lcds[1].scanInterval = 1.5;
   lcds[1].overScanColor = black;
   lcds[1].overScanOn = true;
+  lcds[1].overScanSize = 5;
+  lcds[1].overScanInterval = 10;
+  
   lcds[2] = new LCDD(0, height/2, width/2, height/2, 3);
   lcds[2].scanInterval = .5;
   lcds[2].overScanColor = whiteDD;
   lcds[2].overScanOn = true;
+  lcds[2].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[2].logo.resize(0, 100);
+
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
-  
+  lcds[3].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[3].logo.resize(0, 100);
+
+  // Compositing buffer
   backBuffer = createGraphics(width, height);
 
   loadMovies();
@@ -258,6 +273,7 @@ void setup() {
   fxTimer = new Timer();
   fxTimer.interval = 10 * 1000;
   fxTimer.tfx = () -> {
+    if (effigyOn) return;
     int pInput = input;
     input = 0;
     fx.get(floor(random(fx.size()))).fire();
@@ -295,13 +311,15 @@ void loadEvents() {
   visEvents.put('K', randomLyricColor);
   visEvents.put('l', incLyricFont);
 
+  // EFFIGY
+  visEvents.put('e', toggleEffigy);
+  //visEvents.put('E', innerDDieMode2);
+
   // VISUALIZERS
   visEvents.put('f', toggleFire);
   visEvents.put('h', toggleHito);
   visEvents.put('i', toggleInnerDD);
   visEvents.put('I', innerConnect);
-  visEvents.put('e', innerDDieMode1);
-  visEvents.put('E', innerDDieMode2);
   visEvents.put('o', toggleFlies);
   visEvents.put('O', toggleGrass);
   visEvents.put('[', mowGrass);
@@ -753,6 +771,24 @@ VisEvent randomSchiff = () -> {
   println("RND SCHIFF", schiff.tLevel);
 };
 
+VisEvent toggleEffigy = () -> {
+  effigyOn = !effigyOn;
+  splitScreen(effigyOn);
+  if (effigyOn) {
+    lcds[0].overScanOn = true; //Earth
+    lcds[0].logoOn = true;
+    
+    lcds[1].overScanOn = true; //Wind
+    lcds[1].logoOn = true;
+    
+    lcds[2].overScanOn = true; //Fire
+    lcds[2].logoOn = true;
+    
+    lcds[3].overScanOn = true; //Water
+    lcds[3].logoOn = true;    
+  }
+};
+
 void toggleTV(int tv) {
   lcds[tv].tvOn = !lcds[tv].tvOn;
   println(key, "TV/ON" + tv, lcds[tv].tvOn);
@@ -855,8 +891,8 @@ VisEvent transReset = () -> {
   println(key, "TRANS RESET TV", input, "(0,0)");
 };
 
-VisEvent splitScreen = () -> {
-  if (lcds[0]._width == width) {
+void splitScreen(boolean split) {
+  if (split == true) {
     lcds[0].setResolution(width/2, height/2, 3);
     for (int i = 0; i < lcds.length; i++)
       lcds[i].tvOn = true;
@@ -867,6 +903,16 @@ VisEvent splitScreen = () -> {
     for (int i = 1; i < lcds.length; i++)
       lcds[i].tvOn = false;
     println(key, "SPLIT/OFF");
+  }
+}
+
+VisEvent splitScreen = () -> {
+  if (lcds[0]._width == width) {
+    splitScreen(true);
+  }
+  else {
+    splitScreen(false);
+    effigyOn = false;
   }
 };
   
