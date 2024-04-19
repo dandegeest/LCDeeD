@@ -94,6 +94,7 @@ class LCDD extends Sprite {
   }
     
   void sourceImage(String fname) {
+    source = null;
     source = loadImage(fname);
     if (source.width > source.height)
       source.resize(pwRes, 0);
@@ -106,6 +107,7 @@ class LCDD extends Sprite {
   }
   
   void sourceImage(PImage image, int brighT) {
+    source = null;
     source = image;
     source.loadPixels();
     int xoff = (pwRes - source.width) / 2;

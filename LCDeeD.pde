@@ -198,7 +198,6 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(30);
-  //cursor(loadImage(sketchPath("") + "wcursor.png"), 0, 0);
   fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
@@ -411,7 +410,7 @@ void loadFX() {
   fx.add(mowGrass);
   fx.add(growGrass);
   //fx.add(toggleSchiff);
-  //fx.add(toggleSlides);
+  fx.add(toggleSlides);
 
   fx.add(overScanToggle);
   fx.add(overScanColor);
@@ -507,7 +506,6 @@ void draw() {
   if (inDDon) {
     innerDD.display(backBuffer);
   }
-    
   backBuffer.endDraw();
   
   PImage bImage = backBuffer.get();
@@ -515,24 +513,29 @@ void draw() {
   for (int i = lcds.length - 1; i >= 0; i--) {
     if (lcds[i].tvOn) {
       bImage.resize(0, lcds[i].phRes);
-      lcds[i].sourceImage(bImage, 0);
       
       //Overlay
       if (slideLayer == 2) {
-        PImage vi = null;
+        PImage overlay = null;
         if (video != null && video.isCapturing()) {
           //video.read();
-          vi = video.get();
+          overlay = video.get();
         }
         else if (movie != null) {
-          vi = movie.get();
+          overlay = movie.get();
         }
-        else vi = schiff.fg.get();
-        if (vi != null) {
-          vi.resize(0, lcds[i].phRes);
-          lcds[i].sourceImage(vi, slideBrighT);
+        else overlay = slide;
+        if (overlay != null) {
+          overlay.resize(0, lcds[i].phRes);
+          for (int yy = 0; yy < overlay.height; yy++)
+            for (int xx = 0; xx < overlay.width; xx++) {
+              int pc = overlay.get(xx, yy);
+              if (alpha(pc) != 0 && brightness(pc) > slideBrighT)
+                bImage.set(xx, yy, overlay.get(xx, yy));
+            }
         }
       }
+      lcds[i].sourceImage(bImage, 0);      
       lcds[i].display();
     }
     else offCnt++;
