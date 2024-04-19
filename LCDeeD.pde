@@ -35,6 +35,7 @@ Capture video;
 // Events
 HashMap<Character, VisEvent> visEvents = new HashMap();
 ArrayList<VisEvent> fx = new ArrayList();
+ArrayList<VisEvent> zoom = new ArrayList();
 
 //Effigy
 boolean effigyOn = false;
@@ -111,6 +112,7 @@ float slideX = 0;
 // Timers
 Timer slideTimer;
 Timer fxTimer;
+Timer zoomTimer;
 
 void setSlideGroup(String group) {
   slideGroup = group;
@@ -191,17 +193,16 @@ void loadMovies() {
   println("Loaded Movie Titles", movieTitles.size());
 }
 
-
 String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 
 void setup() {
   size(1280, 720);
-  frameRate(60);
+  frameRate(30);
   //cursor(loadImage(sketchPath("") + "wcursor.png"), 0, 0);
   fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
-  lyrics.add(new String[] {"Love", "Is A", "Fortress", "OF Light", "COME", "INSIDE"});
+  lyrics.add(new String[] {"Love", "Is A", "Fortress", "Of LIGHT", "COME", "INSIDE"});
   lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
   lyrics.add(elements);
   lyric = lyrics.get(0);
@@ -265,7 +266,7 @@ void setup() {
   loadFX();
   
   slideTimer = new Timer();
-  slideTimer.interval = 10 * 1000;
+  slideTimer.interval = 60 * 1000;
   slideTimer.tfx = () -> {
     if (movie == null && video == null) {
       slide = nextSlide(slideGroup);
@@ -273,7 +274,7 @@ void setup() {
   };
   
   fxTimer = new Timer();
-  fxTimer.interval = 10 * 1000;
+  fxTimer.interval = 30 * 1000;
   fxTimer.tfx = () -> {
     if (effigyOn) return;
     int pInput = input;
@@ -281,6 +282,16 @@ void setup() {
     fx.get(floor(random(fx.size()))).fire();
     input = pInput;
   };
+  
+  zoomTimer = new Timer();
+  zoomTimer.interval = 15 * 1000;
+  zoomTimer.tfx = () -> {
+    if (effigyOn) return;
+    int pInput = input;
+    input = 0;
+    zoom.get(floor(random(zoom.size()))).fire();
+    input = pInput;
+  };  
 }
 
 void movieEvent(Movie m) {
@@ -405,13 +416,15 @@ void loadFX() {
   fx.add(overScanToggle);
   fx.add(overScanColor);
   fx.add(overScanColorReset); 
-  fx.add(overScanWidth); 
-  fx.add(overScanInterval); 
   fx.add(overScanWidthReset); 
   fx.add(overScanIntervalReset); 
 
-  fx.add(scaleDown);
-  fx.add(scaleUp);
+  for (int z = 0; z < 3; z++) {
+    zoom.add(scaleUp);
+    zoom.add(overScanInterval);
+  }
+  zoom.add(scaleDown);
+  zoom.add(overScanWidth); 
 
   fx.add(briteMode0);
   fx.add(briteMode1);
@@ -438,6 +451,7 @@ void loadFX() {
 void draw() { 
   timer(slideTimer);
   timer(fxTimer);
+  timer(zoomTimer);
   
   backBuffer.beginDraw();
  
