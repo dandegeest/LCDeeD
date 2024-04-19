@@ -198,7 +198,7 @@ void setup() {
   size(1280, 720);
   frameRate(60);
   //cursor(loadImage(sketchPath("") + "wcursor.png"), 0, 0);
-  //fullScreen();
+  fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
   lyrics.add(new String[] {"Love", "Is A", "Fortress", "OF Light", "COME", "INSIDE"});
@@ -220,17 +220,17 @@ void setup() {
   
   lcds = new LCDD[4];
   lcds[0] = new LCDD(0, 0, width, height, 3);
-  lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch/earth.png");
   lcds[0].logo.resize(0, 100);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
   
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
-  lcds[1].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[1].logo = loadImage(sketchPath("") + "imagesWiitch/air.png");
   lcds[1].logo.resize(0, 100);
   lcds[1].scanInterval = 1.5;
-  lcds[1].overScanColor = black;
+  lcds[1].overScanColor = neonDD;
   lcds[1].overScanOn = true;
   lcds[1].overScanSize = 5;
   lcds[1].overScanInterval = 10;
@@ -239,13 +239,15 @@ void setup() {
   lcds[2].scanInterval = .5;
   lcds[2].overScanColor = whiteDD;
   lcds[2].overScanOn = true;
-  lcds[2].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[2].overScanSize = 15;
+  lcds[2].overScanInterval = 40;
+  lcds[2].logo = loadImage(sketchPath("") + "imagesWiitch/fire.png");
   lcds[2].logo.resize(0, 100);
 
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
-  lcds[3].logo = loadImage(sketchPath("") + "imagesWiitch/wiitch_logo2.png");
+  lcds[3].logo = loadImage(sketchPath("") + "imagesWiitch/water.png");
   lcds[3].logo.resize(0, 100);
 
   // Compositing buffer
