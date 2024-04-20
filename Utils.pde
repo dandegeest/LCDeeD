@@ -2,11 +2,6 @@ import java.io.File;
 import java.util.ArrayList;
 import processing.video.*;
 
-@FunctionalInterface
-interface VisEvent {
-    void fire();
-}
-
 int luminosity(int r, int g, int b, float lumos) {
   // Convert RGB color to HSB color space
   float[] hsb = java.awt.Color.RGBtoHSB(r, g, b, null);
