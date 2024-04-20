@@ -21,7 +21,7 @@ String[] lyric;
 int word = 0;
 int lyricFade;
 PFont[] lyricFonts;
-int lyricFont = 0;
+int lyricFont = 2;
 float lyricSize = 174;
 
 //Movies
@@ -97,13 +97,15 @@ boolean debugOn = false;
 boolean lyricsOn = false;
 boolean schiffOn = false;
 
+boolean autoOn = false;
+
 //Active TV Input
 int input = 0;
 
 //Images
 String slideGroup;
-int slideNumber = -1;
-int slideLayer = 0;
+int slideNumber = 25;
+int slideLayer = 1;
 int slideBrighT = 40;
 int lastPhase = 0;
 PImage slide;
@@ -202,7 +204,7 @@ void setup() {
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
   lyrics.add(new String[] {"Love", "Is A", "Fortress", "Of LIGHT", "COME", "INSIDE"});
-  lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Colonel", "Benji"});
+  lyrics.add(new String[] {"Wiitch TiiT", "Lyndsay", "MAMA T", "AshTree", "The Kernel", "Benjii"});
   lyrics.add(elements);
   lyric = lyrics.get(0);
   
@@ -215,7 +217,7 @@ void setup() {
   String[] show = new String[]{"Dev", "Fire", "Moon", "Phases", "Wiitch"};
   for (String g: show)
     loadSlides(g);  
-  slideGroup = show[0];
+  slideGroup = show[3];
   slide = nextSlide(slideGroup);
   
   lcds = new LCDD[4];
@@ -227,7 +229,7 @@ void setup() {
   
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
-  lcds[1].logo = loadImage(sketchPath("") + "imagesWiitch/air.png");
+  lcds[1].logo = loadImage(sketchPath("") + "imagesWiitch/PinkMoonClueAir.png");
   lcds[1].logo.resize(0, 100);
   lcds[1].scanInterval = 1.5;
   lcds[1].overScanColor = neonDD;
@@ -275,7 +277,7 @@ void setup() {
   fxTimer = new Timer();
   fxTimer.interval = 30 * 1000;
   fxTimer.tfx = () -> {
-    if (effigyOn) return;
+    if (!autoOn || effigyOn) return;
     int pInput = input;
     input = 0;
     fx.get(floor(random(fx.size()))).fire();
@@ -285,7 +287,7 @@ void setup() {
   zoomTimer = new Timer();
   zoomTimer.interval = 15 * 1000;
   zoomTimer.tfx = () -> {
-    if (effigyOn) return;
+    if (!autoOn || effigyOn) return;
     int pInput = input;
     input = 0;
     zoom.get(floor(random(zoom.size()))).fire();
@@ -303,6 +305,8 @@ void captureEvent(Capture c) {
 }
 
 void loadEvents() {
+  visEvents.put('%', toggleAuto);
+  
   // BACK BUFFER
   visEvents.put('b', toggleBackground);
   visEvents.put('a', randomTint);
@@ -562,6 +566,11 @@ void lyricChange() {
   word = 0;
 }
 
+VisEvent toggleAuto = () -> {
+  autoOn = !autoOn;
+  println("AUTO", autoOn);
+};
+
 VisEvent toggleHito = () -> {
   hitoOn = !hitoOn;
   println("HITODAMA", hitoOn);
@@ -680,7 +689,7 @@ VisEvent toggleBackground = () -> {
 };
 
 VisEvent backgroundColorReset = () -> {
-  bgColor = color((int)random(255), 0);//black;
+  bgColor = black;//color((int)random(255), 0);//black;
   println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
 };
 
@@ -1161,6 +1170,12 @@ void drawDebug() {
       text(lcds[i].centerScale ? "|<>|" : "|__|", i * indW/4, indY, indW/4, indH);
     }
 
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(autoOn ? "AUTO" : "OFF", 0, indY, indW, indH);
+    
     pop();
   }
 }
