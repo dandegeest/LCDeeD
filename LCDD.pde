@@ -214,6 +214,10 @@ class LCDD extends Sprite {
   }
   
   void display() { 
+    if (logo != null && logoOn) {
+      image(logo, location().x + (_width - logo.width)/2, location().y + (_height - logo.height)/2);
+    }
+
     if (overScanOn) {
       // Overscan lines directly to screen
       push();
@@ -246,10 +250,6 @@ class LCDD extends Sprite {
     
     popMatrix();
     
-    if (logo != null && logoOn) {
-      image(logo, location().x + _width - logo.width, location().y + _height - logo.height);
-    }
-
     if (pipOn)
       image(source, location().x + _width - source.width, location().y + _height - source.height);
     

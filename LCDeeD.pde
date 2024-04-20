@@ -124,6 +124,11 @@ PImage nextSlide(String group) {
   }
     
   ArrayList<Slide> imgGroup = slides.get(group);
+  //Free up memory
+  Slide ps = imgGroup.get(slideNumber);
+  ps.image = null;
+  println("Closed", ps.filePath);
+  
   slideNumber++;
   if (slideNumber >= imgGroup.size())
     slideNumber = 0;  
@@ -140,20 +145,6 @@ PImage nextSlide(String group) {
   if (group == "Phases")
     lastPhase = slideNumber;
   return slide.image;
-}
-
-PImage randomSlide(String group) {
-  if (!slides.containsKey(group))
-    return slide;
-    
-  ArrayList<Slide> imgGroup = slides.get(group);
-  Slide s = imgGroup.get((int)random(imgGroup.size()-1));
-  println(s, s.image, s.filePath);
-  if (s.image == null) {
-    loadSlideImage(s);
-  }
-  slideX = random(width - s.image.width);
-  return s.image;
 }
 
 PImage loadSlideImage(Slide slide) {
@@ -203,7 +194,7 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(30);
-  fullScreen();
+  //fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
   lyrics.add(new String[] {"LOVE", "IS A", "Fortress", "of LIGHT", "COME", "INSIDE"});
@@ -224,16 +215,17 @@ void setup() {
   slide = nextSlide(slideGroup);
   
   lcds = new LCDD[4];
+  int logoH  = 300;
   lcds[0] = new LCDD(0, 0, width, height, 3);
-  lcds[0].logo = loadImage(sketchPath("") + "imagesWiitch/earth.png");
-  lcds[0].logo.resize(0, 100);
+  lcds[0].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueEarth.png");
+  lcds[0].logo.resize(0, logoH);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
   
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
-  lcds[1].logo = loadImage(sketchPath("") + "imagesWiitch/PinkMoonClueAir.png");
-  lcds[1].logo.resize(0, 100);
+  lcds[1].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueAir.png");
+  lcds[1].logo.resize(0, logoH);
   lcds[1].scanInterval = 1.5;
   lcds[1].overScanColor = neonDD;
   lcds[1].overScanOn = true;
@@ -246,14 +238,14 @@ void setup() {
   lcds[2].overScanOn = true;
   lcds[2].overScanSize = 15;
   lcds[2].overScanInterval = 40;
-  lcds[2].logo = loadImage(sketchPath("") + "imagesWiitch/fire.png");
-  lcds[2].logo.resize(0, 100);
+  lcds[2].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueFire.png");
+  lcds[2].logo.resize(0, logoH);
 
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
-  lcds[3].logo = loadImage(sketchPath("") + "imagesWiitch/water.png");
-  lcds[3].logo.resize(0, 100);
+  lcds[3].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueWater.png");
+  lcds[3].logo.resize(0, logoH);
 
   // Compositing buffer
   backBuffer = createGraphics(width, height);
@@ -385,7 +377,7 @@ void draw() {
         else if (movie != null) {
           overlay = movie.get();
         }
-        else overlay = slide;
+        else overlay = slide.copy();
         if (overlay != null) {
           overlay.resize(0, lcds[i].phRes);
           for (int yy = 0; yy < overlay.height; yy++)

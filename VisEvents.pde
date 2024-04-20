@@ -256,6 +256,12 @@ VisEvent toggleEffigy = () -> {
     lcds[3].overScanOn = true; //Water
     lcds[3].logoOn = true;    
   }
+  else {
+    lcds[0].logoOn = false;
+    lcds[1].logoOn = false;
+    lcds[2].logoOn = false;
+    lcds[3].logoOn = false;    
+  }
 };
 
 void toggleTV(int tv) {
