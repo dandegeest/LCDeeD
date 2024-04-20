@@ -125,9 +125,11 @@ PImage nextSlide(String group) {
     
   ArrayList<Slide> imgGroup = slides.get(group);
   //Free up memory
-  Slide ps = imgGroup.get(slideNumber);
-  ps.image = null;
-  println("Closed", ps.filePath);
+  if (slideNumber < imgGroup.size()) {
+    Slide ps = imgGroup.get(slideNumber);
+    ps.image = null;
+    println("Closed", ps.filePath);
+  }
   
   slideNumber++;
   if (slideNumber >= imgGroup.size())
@@ -139,7 +141,7 @@ PImage nextSlide(String group) {
   }
   
   if (group == "Wiitch")
-    slide.image.resize(0, max(100, (int)random(100, height)));
+    slide.image.resize(0, max(200, (int)random(100, height)));
   
   slideX = random(width - slide.image.width);
   if (group == "Phases")
