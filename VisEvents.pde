@@ -244,17 +244,17 @@ VisEvent toggleEffigy = () -> {
   effigyOn = !effigyOn;
   splitScreen(effigyOn);
   if (effigyOn) {
-    lcds[0].overScanOn = true; //Earth
-    lcds[0].logoOn = true;
+    lcds[0].overScanOn = true;
+    lcds[0].logoOn = earthPuzzOn;
     
-    lcds[1].overScanOn = true; //Wind
-    lcds[1].logoOn = true;
+    lcds[1].overScanOn = true;
+    lcds[1].logoOn = windPuzzOn;
     
-    lcds[2].overScanOn = true; //Fire
-    lcds[2].logoOn = true;
+    lcds[2].overScanOn = true;
+    lcds[2].logoOn = firePuzzOn;
     
-    lcds[3].overScanOn = true; //Water
-    lcds[3].logoOn = true;    
+    lcds[3].overScanOn = true;
+    lcds[3].logoOn = waterPuzzOn;    
   }
   else {
     lcds[0].logoOn = false;
