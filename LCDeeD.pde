@@ -300,7 +300,7 @@ void setup() {
     input = pInput;
   };
   
-  initSerial("COM14");
+  initSerial("COM5");
 }
 
 void movieEvent(Movie m) {
@@ -444,7 +444,7 @@ void drawOSD() {
     noStroke();
     fill(0, 20);
     rect(0, 0, indW, 20);
-    rect(0, indY, indW, 150);  
+    rect(0, indY, indW, 200);  
     textAlign(LEFT, TOP);
     fill(128, 255, 128);
     textSize(12);
@@ -589,6 +589,30 @@ void drawOSD() {
     fill(black);
     text(autoOn ? "AUTO" : "OFF", 0, indY, indW, indH);
     
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(earthPuzzOn ? "EARTH" : "", 0, indY, indW, indH);
+
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(windPuzzOn ? "WIND" : "", 0, indY, indW, indH);
+
+        indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(firePuzzOn ? "FIRE" : "", 0, indY, indW, indH);
+
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(waterPuzzOn ? "WATER" : "", 0, indY, indW, indH);
+
     pop();
   }
 }
@@ -610,6 +634,7 @@ void initSerial(String portName) {
   }
 }
 
+int sCount = 0;
 void serialEvent(Serial port) {
   //Read from port
   String inString = port.readStringUntil('\n');
@@ -617,7 +642,6 @@ void serialEvent(Serial port) {
     inString = inString.trim();
     // Process the message
     String[] command = inString.split(":");
-    printArray(command);
     switch(command[0]) {
       case "EARTH":
         earthPuzzOn = command[1].equals("ON");
@@ -635,5 +659,7 @@ void serialEvent(Serial port) {
         lovePuzzOn = command[1].equals("ON");
         break;
     }
+    
+    effigyUpdate();
   }
 }

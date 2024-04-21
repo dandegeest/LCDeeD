@@ -114,7 +114,7 @@ VisEvent resetVis = () -> {
 
 VisEvent toggleDebug = () -> {
   debugOn = !debugOn;
-  println("FPS", debugOn);
+  println("OSD", debugOn);
 };
 
 VisEvent toggleBackground = () -> {
@@ -240,9 +240,7 @@ VisEvent randomSchiff = () -> {
   println("RND SCHIFF", schiff.tLevel);
 };
 
-VisEvent toggleEffigy = () -> {
-  effigyOn = !effigyOn;
-  splitScreen(effigyOn);
+void effigyUpdate() {
   if (effigyOn) {
     lcds[0].overScanOn = true;
     lcds[0].logoOn = earthPuzzOn;
@@ -254,7 +252,15 @@ VisEvent toggleEffigy = () -> {
     lcds[2].logoOn = firePuzzOn;
     
     lcds[3].overScanOn = true;
-    lcds[3].logoOn = waterPuzzOn;    
+    lcds[3].logoOn = waterPuzzOn;
+  }
+}
+
+VisEvent toggleEffigy = () -> {
+  effigyOn = !effigyOn;
+  splitScreen(effigyOn);
+  if (effigyOn) {
+    effigyUpdate();
   }
   else {
     lcds[0].logoOn = false;
@@ -387,7 +393,7 @@ VisEvent splitScreen = () -> {
   }
   else {
     splitScreen(false);
-    effigyOn = false;
+    if (effigyOn) toggleEffigy.fire();
   }
 };
   
