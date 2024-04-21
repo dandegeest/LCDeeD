@@ -13,6 +13,9 @@ FireFlies flies; // Adapted from https://openprocessing.org/sketch/2198756
 LodeFire fire; // Adapted from https://lodev.org/cgtutor/fire.html
 Schiffman schiff; // Adapted from https://processing.org/examples/tree.html
 
+// Serial COM
+Serial sPort;
+
 // Slides
 HashMap<String, ArrayList<Slide>> slides;
 // Lyrics
@@ -289,7 +292,9 @@ void setup() {
     input = 0;
     zoom.get(floor(random(zoom.size()))).fire();
     input = pInput;
-  };  
+  };
+  
+  initSerial("COM6");
 }
 
 void movieEvent(Movie m) {
@@ -579,5 +584,22 @@ void drawOSD() {
     text(autoOn ? "AUTO" : "OFF", 0, indY, indW, indH);
     
     pop();
+  }
+}
+
+void initSerial(String portName) {
+  printArray(Serial.list());
+  int comPort = -1;
+  String[] ports = Serial.list();
+  for (int i = 0; i < ports.length; i++) {
+    if (ports[i].equals(portName)) {
+      comPort = i;
+      break; // If found, exit the loop
+    }
+  }
+  
+  if (comPort > 0) {
+    println("OpenCOMPort:", Serial.list()[comPort]);
+    sPort = new Serial(this, Serial.list()[comPort], 9600);
   }
 }

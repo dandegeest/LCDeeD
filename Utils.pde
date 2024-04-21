@@ -1,6 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
 import processing.video.*;
+import processing.serial.*;
 
 int luminosity(int r, int g, int b, float lumos) {
   // Convert RGB color to HSB color space
