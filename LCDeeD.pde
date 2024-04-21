@@ -96,6 +96,12 @@ boolean debugOn = false;
 boolean lyricsOn = false;
 boolean schiffOn = false;
 
+// Puzzle
+boolean earthPuzzOn = false;
+boolean windPuzzOn = false;
+boolean firePuzzOn = false;
+boolean waterPuzzOn = false;
+boolean lovePuzzOn = false;
 boolean autoOn = false;
 
 //Active TV Input
@@ -294,7 +300,7 @@ void setup() {
     input = pInput;
   };
   
-  initSerial("COM6");
+  initSerial("COM14");
 }
 
 void movieEvent(Movie m) {
@@ -601,5 +607,33 @@ void initSerial(String portName) {
   if (comPort > 0) {
     println("OpenCOMPort:", Serial.list()[comPort]);
     sPort = new Serial(this, Serial.list()[comPort], 9600);
+  }
+}
+
+void serialEvent(Serial port) {
+  //Read from port
+  String inString = port.readStringUntil('\n');
+  if (inString != null) {
+    inString = inString.trim();
+    // Process the message
+    String[] command = inString.split(":");
+    printArray(command);
+    switch(command[0]) {
+      case "EARTH":
+        earthPuzzOn = command[1].equals("ON");
+        break;
+      case "AIR":
+        windPuzzOn = command[1].equals("ON");
+        break;
+      case "FIRE":
+        firePuzzOn = command[1].equals("ON");
+        break;
+      case "WATER":
+        waterPuzzOn = command[1].equals("ON");
+        break;
+      case "PUZZLE":
+        lovePuzzOn = command[1].equals("ON");
+        break;
+    }
   }
 }
