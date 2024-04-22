@@ -463,6 +463,20 @@ VisEvent slideBrighTDec = () -> {
   println("SLIDE BRIGHT", slideBrighT);
 };
 
+VisEvent pinkMoonFinale = () -> {  
+  line = 0;
+  lyric = lyrics.get(line);
+  word = 3;
+  lyricFade = 10;
+  lyricColor = whiteDD;
+  lyricFont = 2;
+  slideNumber = 116;
+  slideGroup = "Phases";
+  slide = nextSlide(slideGroup);
+  lyricsOn = true;
+  slideGroup = "Puzzle";
+};
+
 void loadKeyboardEvents() {
   keyEvents.put('%', toggleAuto);
   
@@ -482,13 +496,13 @@ void loadKeyboardEvents() {
   // LYRICS
   keyEvents.put('j', nextLyric);
   keyEvents.put('J', lyricsChange);
-  keyEvents.put('k', toggleLyrics);
-  keyEvents.put('K', randomLyricColor);
+  keyEvents.put('K', toggleLyrics);
+  keyEvents.put('k', randomLyricColor);
   keyEvents.put('l', incLyricFont);
 
   // EFFIGY
   keyEvents.put('e', toggleEffigy);
-  //keyEvents.put('E', innerDDieMode2);
+  keyEvents.put('E', pinkMoonFinale);
 
   // VISUALIZERS
   keyEvents.put('f', toggleFire);

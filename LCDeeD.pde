@@ -101,7 +101,7 @@ boolean earthPuzzOn = false;
 boolean windPuzzOn = false;
 boolean firePuzzOn = false;
 boolean waterPuzzOn = false;
-boolean lovePuzzOn = false;
+boolean lovePuzzOn = true;
 boolean autoOn = false;
 
 //Active TV Input
@@ -214,12 +214,12 @@ void setup() {
   lyric = lyrics.get(0);
   
   lyricFonts = new PFont[3];
-  lyricFonts[0] = createFont("fonts/tetris.ttf", 18, true);
-  lyricFonts[1] = createFont("fonts/Roboto-Bold.ttf", 18, true);
-  lyricFonts[2] = createFont("fonts/mocha.ttf", 18, true);
+  lyricFonts[0] = createFont("fonts/tetris.ttf", 72, true);
+  lyricFonts[1] = createFont("fonts/Roboto-Bold.ttf", 72, true);
+  lyricFonts[2] = createFont("fonts/mocha.ttf", 72, true);
 
   slides = new HashMap<>();
-  String[] show = new String[]{"Dev", "Fire", "Moon", "Phases", "Wiitch"};
+  String[] show = new String[]{"Dev", "Fire", "Moon", "Phases", "Wiitch", "Puzzle"};
   for (String g: show)
     loadSlides(g);  
   slideGroup = show[3];
@@ -317,7 +317,7 @@ void draw() {
   timer(slideTimer);
   timer(fxTimer);
   timer(zoomTimer);
-  
+    
   backBuffer.beginDraw();
  
   if (backgroundOn) {
