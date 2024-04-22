@@ -110,7 +110,7 @@ int input = 0;
 //Images
 String slideGroup;
 int slideNumber = 25;
-int slideLayer = 1;
+int slideLayer = 0;
 int slideBrighT = 40;
 int lastPhase = 0;
 PImage slide;
@@ -205,7 +205,7 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(30);
-  //fullScreen();
+  fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
   lyrics.add(new String[] {"LOVE", "IS A", "Fortress", "of LIGHT", "COME", "INSIDE"});
