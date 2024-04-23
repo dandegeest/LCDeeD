@@ -300,7 +300,7 @@ void setup() {
     input = pInput;
   };
   
-  initSerial("COM5");
+  initSerial("COM14");
 }
 
 void movieEvent(Movie m) {
@@ -613,6 +613,12 @@ void drawOSD() {
     fill(black);
     text(waterPuzzOn ? "WATER" : "", 0, indY, indW, indH);
 
+    indY+=indH;
+    fill(whiteDD);
+    rect(0, indY, indW, indH);
+    fill(black);
+    text(lovePuzzOn ? "LOVE" : "", 0, indY, indW, indH);
+    
     pop();
   }
 }
