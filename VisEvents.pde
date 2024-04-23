@@ -470,6 +470,7 @@ VisEvent pinkMoonFinale = () -> {
   lyricFade = 10;
   lyricColor = whiteDD;
   lyricFont = 2;
+  slideLayer = 1;
   slideNumber = 116;
   slideGroup = "Phases";
   slide = nextSlide(slideGroup);
