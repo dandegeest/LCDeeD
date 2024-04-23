@@ -442,13 +442,13 @@ void drawOSD() {
 
     push();
     noStroke();
-    fill(0, 20);
+    fill(0, 255);
     rect(0, 0, indW, 20);
     rect(0, indY, indW, 200);  
     textAlign(LEFT, TOP);
     fill(128, 255, 128);
     textSize(12);
-    text(nf(frameRate, 0, 2), 0, 0, 200, 50);
+    text(nf(frameRate, 2, 2), 0, 0, 200, 50);
 
     textAlign(LEFT, CENTER);
     noFill();
