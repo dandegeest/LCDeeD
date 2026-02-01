@@ -48,9 +48,11 @@ VisEvent toggleSchiff = () -> {
 };
 
 VisEvent toggleSlides = () -> {
-  slideLayer++;
-  if (slideLayer == 3) slideLayer = 0;
-  println("SLIDES", slideLayer);
+  contentMode++;
+  if (contentMode == 3) contentMode = CONTENT_OFF;
+  String modeText = (contentMode == CONTENT_OFF) ? "OFF" : 
+                   (contentMode == CONTENT_BACKGROUND) ? "BACKGROUND" : "OVERLAY";
+  println("CONTENT MODE", modeText);
 };
 
 VisEvent innerConnect = () -> {
@@ -470,7 +472,7 @@ VisEvent pinkMoonFinale = () -> {
   lyricFade = 10;
   lyricColor = whiteDD;
   lyricFont = 2;
-  slideLayer = 1;
+  contentMode = CONTENT_BACKGROUND;
   slideNumber = 116;
   slideGroup = "Phases";
   slide = nextSlide(slideGroup);

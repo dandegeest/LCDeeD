@@ -83,8 +83,20 @@ color bgColor = black;
 color slideTint = neonDD2;
 color lyricColor = neonDD;
 
+// Content rendering modes
+final int CONTENT_OFF = 0;
+final int CONTENT_BACKGROUND = 1;
+final int CONTENT_OVERLAY = 2;
+
 // Compositing Buffer
 PGraphics backBuffer;
+
+// Cached scaled content for performance
+PGraphics scaledContent;
+boolean contentCacheValid = false;
+boolean lastVideoState = false;
+boolean lastMovieState = false;
+color lastTint = color(0);
 
 // Playback options
 boolean inDDon = false;
@@ -110,7 +122,7 @@ int input = 0;
 //Images
 String slideGroup;
 int slideNumber = 25;
-int slideLayer = 0;
+int contentMode = CONTENT_OFF;
 int slideBrighT = 40;
 int lastPhase = 0;
 PImage slide;
@@ -186,7 +198,7 @@ void loadSlides(String group) {
 
 void loadMovies() {
   String moviePath = sketchPath("") + "videos" + "/";
-  for (String fn: loadImageFolder(moviePath)) {
+  for (String fn: loadMovieFolder(moviePath)) {
     movieTitles.add(moviePath + fn);
   }
   
@@ -205,7 +217,7 @@ String[] elements = new String[] {"Earth", "Wind", "Fire", "Water"};
 void setup() {
   size(1280, 720);
   frameRate(30);
-  fullScreen();
+  //fullScreen();
   
   lyrics.add(new String[] {"It's", "The Moon", "The", "Pink Moon", "And", "It's", "Rising"});
   lyrics.add(new String[] {"LOVE", "IS A", "Fortress", "of LIGHT", "COME", "INSIDE"});
@@ -260,6 +272,11 @@ void setup() {
 
   // Compositing buffer
   backBuffer = createGraphics(width, height);
+  
+  // Initialize scaled content buffer  
+  if (scaledContent == null) {
+    scaledContent = createGraphics(backBuffer.width, backBuffer.height);
+  }
 
   loadMovies();
   
@@ -277,6 +294,7 @@ void setup() {
   slideTimer.tfx = () -> {
     if (movie == null && video == null) {
       slide = nextSlide(slideGroup);
+      contentCacheValid = false; // Invalidate cache when slide changes
     }
   };
   
@@ -324,18 +342,52 @@ void draw() {
     backBuffer.background(bgColor); 
   }
 
-  if (slideLayer == 1) {
-    if (slideTint != whiteDD) {
-      backBuffer.tint(slideTint);
+  if (contentMode == CONTENT_BACKGROUND) {
+    // Cache video/movie states to avoid repeated method calls
+    boolean videoActive = (video != null && video.isCapturing());
+    boolean movieActive = (movie != null && movie.isPlaying());
+    
+    // Videos and movies need to update every frame when playing
+    // Only static slides can be cached
+    boolean sourceChanged = (videoActive != lastVideoState) || 
+                           (movieActive != lastMovieState) || 
+                           (slideTint != lastTint) || 
+                           !contentCacheValid ||
+                           videoActive || movieActive; // Force update for active video/movie
+    
+    if (sourceChanged) {
+      scaledContent.beginDraw();
+      scaledContent.clear();
+      
+      // Apply tint only when building cache
+      if (slideTint != whiteDD) {
+        scaledContent.tint(slideTint);
+      } else {
+        scaledContent.noTint();
+      }
+      
+      if (videoActive) {
+        scaledContent.image(video, 0, 0, scaledContent.width, scaledContent.height);
+      }
+      else if (movieActive) {
+        scaledContent.image(movie, 0, 0, scaledContent.width, scaledContent.height);
+      }
+      else {
+        scaledContent.image(slide, slideX, 0);
+      }
+      
+      scaledContent.endDraw();
+      
+      // Update cache state (but don't mark as valid for video/movie)
+      lastVideoState = videoActive;
+      lastMovieState = movieActive;
+      lastTint = slideTint;
+      contentCacheValid = !(videoActive || movieActive); // Only cache static content
     }
     
-    if (video != null && video.isCapturing()) {
-      backBuffer.image(video, 0, 0, backBuffer.width, backBuffer.height);
-    }
-    else if (movie != null  && movie.isPlaying())
-      backBuffer.image(movie, 0, 0, backBuffer.width, backBuffer.height);
-    else
-      backBuffer.image(slide, slideX, 0);
+    // Just draw the cached scaled content
+    backBuffer.noTint();
+    backBuffer.image(scaledContent, 0, 0);
   }
   
   if (lyricsOn) {
@@ -381,7 +433,7 @@ void draw() {
       bImage.resize(0, lcds[i].phRes);
       
       //Overlay
-      if (slideLayer == 2) {
+      if (contentMode == CONTENT_OVERLAY) {
         PImage overlay = null;
         if (video != null && video.isCapturing()) {
           //video.read();
@@ -470,7 +522,9 @@ void drawOSD() {
     fill(whiteDD);
     rect(0, indY, indW, indH);
     fill(black);
-    text("S:" + slideLayer + " B:" + slideBrighT, 0, indY, indW, indH);
+    String modeText = (contentMode == CONTENT_OFF) ? "OFF" : 
+                     (contentMode == CONTENT_BACKGROUND) ? "BG" : "OVR";
+    text("C:" + modeText + " B:" + slideBrighT, 0, indY, indW, indH);
     
     indY+=indH;
     fill(whiteDD);

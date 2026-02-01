@@ -9,6 +9,13 @@ class Pixel extends Sprite {
   float lumos = 0.0;
   boolean dirty = true;
   
+  // Original color storage for scanline effect
+  int originalR = 0;
+  int originalG = 0;
+  int originalB = 0;
+  float originalLumos = 0.0;
+  boolean hasStoredColor = false;
+  
   Pixel(float x, float y, float w, float h, int pidx, LCDD lcd) {
     super(x, y, w, h);
     
@@ -38,6 +45,33 @@ class Pixel extends Sprite {
     subPixels[2].setColor(luminosity(0, 0, bv, lumos));
 
     lcdd.invalidate(this);
+  }
+  
+  void saveOriginalColor() {
+    if (!hasStoredColor) {
+      originalR = rv;
+      originalG = gv;
+      originalB = bv;
+      originalLumos = lumos;
+      hasStoredColor = true;
+    }
+  }
+  
+  void restoreOriginalColor() {
+    if (hasStoredColor) {
+      setRGB(originalR, originalG, originalB, originalLumos);
+      hasStoredColor = false;
+    }
+  }
+  
+  // Convenience getters for color values
+  int r() { return rv; }
+  int g() { return gv; }
+  int b() { return bv; }
+  
+  // Packed RGB for faster comparison
+  int getRGB() { 
+    return (rv << 16) | (gv << 8) | bv; 
   }
   
   void display() {

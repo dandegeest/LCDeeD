@@ -63,3 +63,47 @@ ArrayList<String> loadImageFolder(String folderPath) {
   
   return filenames;
 }
+
+ArrayList<String> loadMovieFolder(String folderPath) {
+  ArrayList<String> filenames = new ArrayList<String>();
+  
+  // Processing Video library supported formats (GStreamer-based)
+  String[] movieExtensions = {".mov", ".mp4", ".m4v", ".avi"};
+  
+  // Create a File object for the folder
+  File folder = new File(folderPath);
+  
+  // Check if the folder exists and is a directory
+  if (folder.exists() && folder.isDirectory()) {
+    println("Loading movies from...", folderPath);
+    // Get an array of File objects representing files in the folder
+    File[] files = folder.listFiles();
+    
+    // Loop through the files array and filter for movie files only
+    for (File file : files) {
+      if (file.isFile()) {
+        String fileName = file.getName().toLowerCase();
+        
+        // Skip hidden files like .DS_Store
+        if (fileName.startsWith(".")) {
+          continue;
+        }
+        
+        // Check if file has a movie extension
+        boolean isMovie = false;
+        for (String ext : movieExtensions) {
+          if (fileName.endsWith(ext)) {
+            isMovie = true;
+            break;
+          }
+        }
+        
+        if (isMovie) {
+          filenames.add(file.getName()); // Add original case filename
+        }
+      }
+    }
+  }
+  
+  return filenames;
+}

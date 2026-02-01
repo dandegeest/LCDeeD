@@ -8,9 +8,13 @@ class LCDD extends Sprite {
   int pxSize = 3; // Pixel size ( 3 X 3 -> Each subpixel is 1 X 3
   // Display Pixels
   ArrayList<Pixel> _pixels = new ArrayList<Pixel>();
-  // Invalid pixel range for redraw
-  int[] redrawRange = new int[2];
+  // Dirty regions for optimized redraw
+  ArrayList<int[]> dirtyRects = new ArrayList<int[]>(); // [x1, y1, x2, y2]
   boolean fullRedraw = false;
+  
+  // Pre-allocated line arrays for performance
+  private List<Pixel>[] cachedHLines;
+  private boolean linesInitialized = false;
   // Transform
   float scale = 1.0;
   float transX = 0.0;
@@ -52,7 +56,11 @@ class LCDD extends Sprite {
 
     _pixels.clear();
     
+    // Initialize cached line arrays
+    cachedHLines = new List[phRes];
+    
     for (int py = 0; py < phRes; py++) {
+      cachedHLines[py] = new ArrayList<Pixel>(pwRes);
       for (int px = 0; px < pwRes; px++) {
         Pixel pixel = new Pixel(
           position.x + px * pxSize,
@@ -60,9 +68,15 @@ class LCDD extends Sprite {
           pxSize , pxSize,
           (py * pwRes) + px, this);
         _pixels.add(pixel);
+        cachedHLines[py].add(pixel);
       }
     }
-      
+    
+    // Reset scanner variables to prevent out of bounds errors
+    scanLine = 0;
+    pvscanLine = 0;
+    
+    linesInitialized = true;
     println("Set Resolution", pwRes, phRes);
   }
   
@@ -75,11 +89,9 @@ class LCDD extends Sprite {
   }
   
   List<Pixel> getHLine(int row) {
-    if (row >= 0 && row < phRes) {
-      int startIndex = row * pwRes;
-      return _pixels.subList(startIndex, startIndex + pwRes);
+    if (row >= 0 && row < phRes && linesInitialized) {
+      return cachedHLines[row]; // Direct access to pre-allocated array
     }
-    
     return null;
   }
   
@@ -194,23 +206,24 @@ class LCDD extends Sprite {
   }  
   
   void scanComplete() {
-    redrawRange = new int[] { pwRes * phRes, 0 };
+    dirtyRects.clear();
     fullRedraw = false;
   }
 
   void invalidate() {
-    redrawRange = new int[] { 0, (pwRes * phRes) - 1 };
+    dirtyRects.clear();
+    dirtyRects.add(new int[]{0, 0, pwRes-1, phRes-1});
     fullRedraw = true;
   }
   
   void invalidate(Pixel pixel) {
-    invalidate(pixel.pixelIndex, pixel.pixelIndex);
-    pixel.dirty = true;
+    int px = pixel.pixelIndex % pwRes;
+    int py = pixel.pixelIndex / pwRes;
+    addDirtyRect(px, py, px, py);
   }
   
-  void invalidate(int s, int e) {  
-    redrawRange[0] = min(redrawRange[0], s);
-    redrawRange[1] = max(redrawRange[1], e);
+  void addDirtyRect(int x1, int y1, int x2, int y2) {  
+    dirtyRects.add(new int[]{x1, y1, x2, y2});
   }
   
   void display() { 
@@ -238,14 +251,23 @@ class LCDD extends Sprite {
     
     if (scanInterval > 0)
       scanner();
-      
-    for (int i = redrawRange[0]; i <= redrawRange[1]; i++) {
-      Pixel pixel = _pixels.get(i);
-      if (pixel.dirty || fullRedraw) {
-          pixel.display();
+    
+    // Optimized dirty region rendering
+    if (fullRedraw) {
+      for (Pixel pixel : _pixels) {
+        pixel.display();
       }
-        
-      pixel.dirty = false;
+    } else {
+      // Only render dirty rectangles
+      for (int[] rect : dirtyRects) {
+        for (int y = rect[1]; y <= rect[3]; y++) {
+          for (int x = rect[0]; x <= rect[2]; x++) {
+            if (x >= 0 && x < pwRes && y >= 0 && y < phRes) {
+              _pixels.get(y * pwRes + x).display();
+            }
+          }
+        }
+      }
     }
     
     popMatrix();
@@ -258,22 +280,44 @@ class LCDD extends Sprite {
   
   void scanner() {
     if (scanLine == 0) {
-      pvscanLine = phRes -1;
+      pvscanLine = phRes - 1;
     }
 
-    rescanLine(pvscanLine);
-
-    List<Pixel> l = getHLine(floor(scanLine));
-    if (l != null) {
-      for (int i = 0; i < l.size(); i++) {
-        Pixel pixel = l.get(i);
-        pixel.setRGB(255, 255, 255, pixel.lumos);
+    // Only update pixels if scanline actually moved
+    int currentScanLine = floor(scanLine);
+    if (currentScanLine != pvscanLine) {
+      // Bounds check for previous scanline
+      if (pvscanLine >= 0 && pvscanLine < phRes) {
+        // Restore previous scanline to original colors
+        int startIdx = pvscanLine * pwRes;
+        if (startIdx >= 0 && startIdx + pwRes <= _pixels.size()) {
+          for (int i = 0; i < pwRes; i++) {
+            Pixel pixel = _pixels.get(startIdx + i);
+            // Only restore if it was the scanline (bright white: 0xFFFFFF)
+            if (pixel.getRGB() == 0xFFFFFF) {
+              pixel.restoreOriginalColor();
+            }
+          }
+        }
       }
+      
+      // Bounds check for current scanline
+      if (currentScanLine >= 0 && currentScanLine < phRes) {
+        // Set new scanline to bright
+        int startIdx = currentScanLine * pwRes;
+        if (startIdx >= 0 && startIdx + pwRes <= _pixels.size()) {
+          for (int i = 0; i < pwRes; i++) {
+            Pixel pixel = _pixels.get(startIdx + i);
+            pixel.saveOriginalColor(); // Store current color
+            pixel.setRGB(255, 255, 255, pixel.lumos);
+          }
+        }
+      }
+      
+      pvscanLine = currentScanLine;
     }
     
-    pvscanLine = floor(scanLine);
     scanLine += scanInterval;
-    
     if (scanLine >= phRes) {
       scanLine = 0;
     }
