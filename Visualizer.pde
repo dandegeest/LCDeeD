@@ -15,8 +15,8 @@ abstract class Visualizer {
     this.y = y;
     this.w = w;
     this.h = h;
-    this.primaryColor = color(greenDD);
-    this.secondaryColor = color(whiteDD);
+    this.primaryColor = color(blueDD);
+    this.secondaryColor = color(purpleDD);
     initialize();
   }
   
@@ -94,7 +94,7 @@ class PulseVisualizer extends Visualizer {
     buffer.push();
     buffer.noFill();
     buffer.stroke(red(primaryColor), green(primaryColor), blue(primaryColor), alpha * 0.8);
-    buffer.strokeWeight(2);
+    buffer.strokeWeight(1);
     
     float centerX = x + w * 0.5;
     float centerY = y + h * 0.5;

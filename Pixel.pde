@@ -21,7 +21,7 @@ class Pixel extends Sprite {
     
     subPixels = new SubPixel[3];
     
-    int subPixWidth = floor(w / 3);
+    float subPixWidth = w / 3.0;  // Use float to handle fractional widths
     for (int i = 0; i < 3; i++) {
       subPixels[i] = new SubPixel(position.x + i * subPixWidth, position.y, subPixWidth, h);
     }

@@ -5,7 +5,7 @@ class LCDD extends Sprite {
   // Resolution
   int pwRes = 0; // Pixels per Line
   int phRes = 0; // Number of lines
-  int pxSize = 3; // Pixel size ( 3 X 3 -> Each subpixel is 1 X 3
+  float pxSize = 3.0; // Pixel size (now supports fractional values)
   // Compositing Buffer
   PGraphics backBuffer;
   // Display Pixels
@@ -45,7 +45,7 @@ class LCDD extends Sprite {
   // Custom visualizer instance
   Visualizer customVisualizer;
   
-  LCDD(float x, float y, float w, float h, int psize) {
+  LCDD(float x, float y, float w, float h, float psize) {
     super(x, y, w, h);
     backBuffer = createGraphics((int)w, (int)h);
     
@@ -55,14 +55,15 @@ class LCDD extends Sprite {
     println("Starting LCDD/TV™", pwRes, phRes, 1 << subPixelDisclination);   
   }
 
-  void setResolution(float w, float h, int psize) {
+  void setResolution(float w, float h, float psize) {
     pxSize = psize;
     _width = w;
     _height = h;
     pwRes = floor(_width/pxSize);
     phRes = floor(_height/pxSize);
 
-    _pixels.clear();
+    println("Setting Resolution to", pwRes, "x", phRes, "with pixel size", pxSize);
+    _pixels.clear();  
     
     // Initialize cached line arrays
     cachedHLines = new List[phRes];
@@ -85,7 +86,6 @@ class LCDD extends Sprite {
     pvscanLine = 0;
     
     linesInitialized = true;
-    println("Set Resolution", pwRes, phRes);
   }
   
   Pixel pixelAt(int x, int y) {
@@ -118,10 +118,12 @@ class LCDD extends Sprite {
     if (customVisualizer != null && customVisualizer.isEnabled()) {
       customVisualizer.update();
       backBuffer.beginDraw();
+      if (backgroundOn) {
+        backBuffer.background(bgColor);
+      }
       customVisualizer.render(backBuffer);
       backBuffer.endDraw();   
       PImage bImage = backBuffer.get();
-
       bImage.resize(0, phRes);
       sourceImage(bImage, 0);
     }    
@@ -167,7 +169,7 @@ class LCDD extends Sprite {
           else {
             switch (lumosMode) {
               case 0:
-                px.setRGB(r, g, b, y % 2 == 0 ? .5 : 1.0);
+                px.setRGB(r, g, b, y % 2 == 0 ? .75 : 1.0);
                 break;
               case 1:
                 px.setRGB(r, g, b, 1.0);

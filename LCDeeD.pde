@@ -64,32 +64,36 @@ void setup() {
   //fullScreen();
   
   lcds = new LCDD[4];
-  lcds[0] = new LCDD(0, 0, width, height, 3);
+  lcds[0] = new LCDD(0, 0, width, height, 1.5);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
   lcds[0].customVisualizer = new PulseVisualizer(0, 0, width, height);
   lcds[0].enableVisualizer();
   
   // Split screens
-  lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
+  lcds[1] = new LCDD(width/2, 0, width/2, height/2, 1.5);
   lcds[1].scanInterval = 1.5;
   lcds[1].overScanColor = neonDD;
   lcds[1].overScanOn = true;
   lcds[1].overScanSize = 5;
   lcds[1].overScanInterval = 10;
+  lcds[1].customVisualizer = new ImageVisualizer(0, 0,  width/2, height/2, "JunkLCD.jpg");
+  lcds[1].enableVisualizer();
   
-  lcds[2] = new LCDD(0, height/2, width/2, height/2, 3);
+  lcds[2] = new LCDD(0, height/2, width/2, height/2, 1.5);
   lcds[2].scanInterval = .5;
   lcds[2].overScanColor = whiteDD;
   lcds[2].overScanOn = true;
   lcds[2].overScanSize = 15;
   lcds[2].overScanInterval = 40;
-  lcds[2].customVisualizer = new GridVisualizer(0, 0, width, height);
+  lcds[2].customVisualizer = new GridVisualizer(0, 0,  width/2, height/2);
   lcds[2].enableVisualizer();
 
-  lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
+  lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 1.5);
   lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
+  lcds[3].customVisualizer = new PulseVisualizer(0, 0,  width/2, height/2);
+  lcds[3].enableVisualizer();
   
   loadKeyboardEvents();
   loadTimerEvents();
@@ -120,13 +124,19 @@ void draw() {
   timer(fxTimer);
   timer(zoomTimer);
     
+  boolean anyTVOn = false;
   for (LCDD lcdd : lcds) {
-    if (lcdd != null && lcdd.tvOn) {
-      lcdd.update();
-      //lcdd.sourceImage("imagesDev/calibrate.png");
+    lcdd.update();
+    if (lcdd.tvOn) {
       lcdd.display();
-      }
+      anyTVOn = true;
     }
+  }
+
+  if (!anyTVOn) {
+    int l = (int)random(lcds.length);
+    image(lcds[l].backBuffer, lcds[l].position.x, lcds[l].position.y);
+  }
 
   drawOSD();
 }

@@ -77,12 +77,12 @@ VisEvent toggleDebug = () -> {
 
 VisEvent toggleBackground = () -> {
   backgroundOn = !backgroundOn;
-  for (int i = 0; i < lcds.length; i++)
+  for (int i = 0; i < lcds.length; i++) {
     lcds[i].invalidate();
-    
-  if (backgroundOn == false) {
-    //backBuffer.clear();  // Clear all pixels to transparent
-    //backBuffer.background(0, 0, 0, 0); 
+    if (backgroundOn == false) {
+      //lcds[i].backBuffer.clear();  // Clear all pixels to transparent
+      //lcds[i].backBuffer.background(0, 0, 0, 0); 
+    }
   }
   println("BACKGROUND", backgroundOn);
 };
