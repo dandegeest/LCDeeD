@@ -35,7 +35,6 @@ color pinkDD2 = color(255, 105, 180);
 color neonDD = color(255, 105, 180);
 color neonDD2 = color(255, 20, 147);
 
-
 color bgColor = black;
 color slideTint = neonDD2;
 
@@ -63,19 +62,14 @@ void setup() {
   //fullScreen();
   
   lcds = new LCDD[4];
-  int logoH  = 300;
   lcds[0] = new LCDD(0, 0, width, height, 3);
-  lcds[0].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueEarth.png");
-  lcds[0].logo.resize(0, logoH);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
-  lcds[0].customVisualizer = new GridVisualizer(0, 0, width, height);
+  lcds[0].customVisualizer = new ImageVisualizer(0, 0, width, height, "imagesDev/calibrate.png");
   lcds[0].enableVisualizer();
   
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 3);
-  lcds[1].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueAir.png");
-  lcds[1].logo.resize(0, logoH);
   lcds[1].scanInterval = 1.5;
   lcds[1].overScanColor = neonDD;
   lcds[1].overScanOn = true;
@@ -88,14 +82,10 @@ void setup() {
   lcds[2].overScanOn = true;
   lcds[2].overScanSize = 15;
   lcds[2].overScanInterval = 40;
-  lcds[2].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueFire.png");
-  lcds[2].logo.resize(0, logoH);
 
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
-  lcds[3].logo = loadImage(sketchPath("") + "imagesPuzzle/PinkMoonClueWater.png");
-  lcds[3].logo.resize(0, logoH);
   
   loadKeyboardEvents();
   loadTimerEvents();

@@ -148,3 +148,47 @@ class GridVisualizer extends Visualizer {
     this.gridSize = size;
   }
 }
+
+// Simple image visualizer
+class ImageVisualizer extends Visualizer {
+  private PImage sourceImage;
+  private String imagePath;
+  
+  public ImageVisualizer(float x, float y, float w, float h) {
+    super(x, y, w, h);
+  }
+  
+  public ImageVisualizer(float x, float y, float w, float h, String imagePath) {
+    super(x, y, w, h);
+    setImage(imagePath);
+  }
+  
+  public void setImage(String imagePath) {
+    this.imagePath = imagePath;
+    try {
+      sourceImage = loadImage(this.imagePath);
+      if (sourceImage == null) {
+        println("Failed to load image: " + imagePath);
+      }
+    } catch (Exception e) {
+      println("Error loading image: " + imagePath + " - " + e.getMessage());
+      sourceImage = null;
+    }
+  }
+  
+  public void setImage(PImage img) {
+    sourceImage = img;
+    imagePath = null;
+  }
+  
+  public void render(PGraphics buffer) {
+    if (!enabled || sourceImage == null) return;
+    
+    buffer.push();
+    buffer.tint(255, alpha);
+    
+    buffer.image(sourceImage, 0, 0, w/2, h/2);
+    
+    buffer.pop();
+  }
+}

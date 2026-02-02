@@ -37,6 +37,14 @@ VisEvent cycleCustomVisualizer = () -> {
       if (current instanceof PulseVisualizer) {
         lcd.setVisualizer(new GridVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
       } else if (current instanceof GridVisualizer) {
+        // Create ImageVisualizer with a sample image
+        ImageVisualizer imgVis = new ImageVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height);
+        imgVis.setImage(sketchPath("") + "imagesDev/testPattern.png"); // You can change this path
+        lcd.setVisualizer(imgVis);
+      } else if (current instanceof ImageVisualizer) {
+        lcd.setVisualizer(new PulseVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
+      } else {
+        // Fallback to PulseVisualizer if unknown type
         lcd.setVisualizer(new PulseVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
       }
       // Keep the same enabled state

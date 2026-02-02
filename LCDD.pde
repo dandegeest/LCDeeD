@@ -48,10 +48,8 @@ class LCDD extends Sprite {
   LCDD(float x, float y, float w, float h, int psize) {
     super(x, y, w, h);
     backBuffer = createGraphics((int)w, (int)h);
-    setResolution(w, h, psize);
     
-    // Initialize with pulse visualizer by default
-    customVisualizer = new PulseVisualizer(position.x, position.y, w, h);
+    setResolution(w, h, psize);
     
     invalidate();   
     println("Starting LCDD/TV™", pwRes, phRes, 1 << subPixelDisclination);   
