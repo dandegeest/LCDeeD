@@ -187,8 +187,8 @@ class ImageVisualizer extends Visualizer {
     buffer.push();
     buffer.tint(255, alpha);
     
-    buffer.image(sourceImage, 0, 0, w/2, h/2);
-    
+    buffer.image(sourceImage, 0, 0);
+
     buffer.pop();
   }
 }

@@ -59,13 +59,15 @@ Timer zoomTimer;
 void setup() {
   size(1280, 720);
   frameRate(30);
+  //Important for pixel accuracy in LCDD rendering
+  pixelDensity(1);
   //fullScreen();
   
   lcds = new LCDD[4];
   lcds[0] = new LCDD(0, 0, width, height, 3);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
-  lcds[0].customVisualizer = new ImageVisualizer(0, 0, width, height, "imagesDev/calibrate.png");
+  lcds[0].customVisualizer = new PulseVisualizer(0, 0, width, height);
   lcds[0].enableVisualizer();
   
   // Split screens
@@ -82,6 +84,8 @@ void setup() {
   lcds[2].overScanOn = true;
   lcds[2].overScanSize = 15;
   lcds[2].overScanInterval = 40;
+  lcds[2].customVisualizer = new GridVisualizer(0, 0, width, height);
+  lcds[2].enableVisualizer();
 
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 3);
   lcds[3].overScanColor = greenDD;
@@ -119,7 +123,7 @@ void draw() {
   for (LCDD lcdd : lcds) {
     if (lcdd != null && lcdd.tvOn) {
       lcdd.update();
-      //lcdd.sourceImage("imagesTest/calibrate.png");
+      //lcdd.sourceImage("imagesDev/calibrate.png");
       lcdd.display();
       }
     }

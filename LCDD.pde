@@ -121,6 +121,7 @@ class LCDD extends Sprite {
       customVisualizer.render(backBuffer);
       backBuffer.endDraw();   
       PImage bImage = backBuffer.get();
+
       bImage.resize(0, phRes);
       sourceImage(bImage, 0);
     }    
@@ -134,9 +135,8 @@ class LCDD extends Sprite {
     else
       source.resize(0, phRes);
 
+    println("Loaded Static Image", pwRes, phRes, source.width, source.height);
     sourceImage(source, 0);
-    println("----->", source.width, source.height);
-    println("Loaded Image", source.width, source.height);
   }
   
   void sourceImage(PImage image, int brighT) {
