@@ -1,5 +1,5 @@
-// Base Visualizer class for custom drawing effects
-abstract class Visualizer {
+// Base LCDDInput class for custom drawing effects
+abstract class LCDDInput {
   protected float x, y, w, h;
   protected boolean enabled = false;
   protected color primaryColor;
@@ -10,7 +10,7 @@ abstract class Visualizer {
   protected float time = 0;
   protected float speed = 1.0;
   
-  public Visualizer(float x, float y, float w, float h) {
+  public LCDDInput(float x, float y, float w, float h) {
     this.x = x;
     this.y = y;
     this.w = w;
@@ -70,12 +70,12 @@ abstract class Visualizer {
   }
 }
 
-// Example concrete visualizer - Pulse effect
-class PulseVisualizer extends Visualizer {
+// Example concrete LCDDInput - Pulse effect
+class PulseLCDDInput extends LCDDInput {
   private float pulseRadius;
   private float maxRadius;
   
-  public PulseVisualizer(float x, float y, float w, float h) {
+  public PulseLCDDInput(float x, float y, float w, float h) {
     super(x, y, w, h);
   }
   
@@ -111,12 +111,12 @@ class PulseVisualizer extends Visualizer {
   }
 }
 
-// Grid pattern visualizer
-class GridVisualizer extends Visualizer {
+// Grid pattern LCDDInput
+class GridLCDDInput extends LCDDInput {
   private float gridSize = 20;
   private float offset;
   
-  public GridVisualizer(float x, float y, float w, float h) {
+  public GridLCDDInput(float x, float y, float w, float h) {
     super(x, y, w, h);
   }
   
@@ -149,16 +149,16 @@ class GridVisualizer extends Visualizer {
   }
 }
 
-// Simple image visualizer
-class ImageVisualizer extends Visualizer {
+// Simple image LCDDInput
+class ImageLCDDInput extends LCDDInput {
   private PImage sourceImage;
   private String imagePath;
   
-  public ImageVisualizer(float x, float y, float w, float h) {
+  public ImageLCDDInput(float x, float y, float w, float h) {
     super(x, y, w, h);
   }
   
-  public ImageVisualizer(float x, float y, float w, float h, String imagePath) {
+  public ImageLCDDInput(float x, float y, float w, float h, String imagePath) {
     super(x, y, w, h);
     setImage(imagePath);
   }

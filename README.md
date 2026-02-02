@@ -195,10 +195,10 @@ The system uses a comprehensive event system (`VisEvents.pde`) that maps keyboar
 - **E**: Pink Moon finale sequence
 - **%**: Toggle auto mode
 - **0**: Reset all settings
-- **Backspace**: Reset visualizers
-- **v**: Toggle custom visualizers on/off
-- **V**: Cycle through custom visualizer types
-- **r**: Reset custom visualizers
+- **Backspace**: Reset LCDDInputs
+- **v**: Toggle custom LCDDInputs on/off
+- **V**: Cycle through custom LCDDInput types
+- **r**: Reset custom LCDDInputs
 - **D**: Toggle debug display
 - **Enter**: Save frame
 

@@ -67,8 +67,8 @@ void setup() {
   lcds[0] = new LCDD(0, 0, width, height, 1.5);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
-  lcds[0].customVisualizer = new FireFliesVisualizer(0, 0, width, height);
-  lcds[0].enableVisualizer();
+  lcds[0].sourceInput = new FireFliesLCDDInput(0, 0, width, height);
+  lcds[0].enableLCDDInput();
   
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 1.5);
@@ -77,8 +77,8 @@ void setup() {
   lcds[1].overScanOn = true;
   lcds[1].overScanSize = 5;
   lcds[1].overScanInterval = 10;
-  lcds[1].customVisualizer = new ImageVisualizer(0, 0,  width/2, height/2, "JunkLCD.jpg");
-  lcds[1].enableVisualizer();
+  lcds[1].sourceInput = new ImageLCDDInput(0, 0,  width/2, height/2, "JunkLCD.jpg");
+  lcds[1].enableLCDDInput();
   
   lcds[2] = new LCDD(0, height/2, width/2, height/2, 1.5);
   lcds[2].scanInterval = .5;
@@ -86,14 +86,14 @@ void setup() {
   lcds[2].overScanOn = true;
   lcds[2].overScanSize = 15;
   lcds[2].overScanInterval = 40;
-  lcds[2].customVisualizer = new GridVisualizer(0, 0,  width/2, height/2);
-  lcds[2].enableVisualizer();
+  lcds[2].sourceInput = new GridLCDDInput(0, 0,  width/2, height/2);
+  lcds[2].enableLCDDInput();
 
   lcds[3] = new LCDD(width/2, height/2, width/2, height/2, 1.5);
   lcds[3].overScanColor = greenDD;
   lcds[3].overScanOn = true;
-  lcds[3].customVisualizer = new PulseVisualizer(0, 0,  width/2, height/2);
-  lcds[3].enableVisualizer();
+  lcds[3].sourceInput = new PulseLCDDInput(0, 0,  width/2, height/2);
+  lcds[3].enableLCDDInput();
   
   loadKeyboardEvents();
   loadTimerEvents();
@@ -134,7 +134,7 @@ void draw() {
   }
 
   if (!anyTVOn) {
-    int l = (int)random(lcds.length);
+    int l = input; //(int)random(lcds.length);
     image(lcds[l].backBuffer, lcds[l].position.x, lcds[l].position.y);
   }
 

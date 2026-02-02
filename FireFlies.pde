@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Collections;
 
-class FireFliesVisualizer extends Visualizer {
+class FireFliesLCDDInput extends LCDDInput {
   ArrayList<FireFly> fireFlies;
   PGraphics fg;
   ArrayList<Integer> colors;
@@ -13,7 +13,7 @@ class FireFliesVisualizer extends Visualizer {
   boolean fliesOn = true;
   boolean grassOn = true;
   
-  FireFliesVisualizer(float x, float y, float w, float h) {
+  FireFliesLCDDInput(float x, float y, float w, float h) {
     super(x, y, w, h);
   }
   

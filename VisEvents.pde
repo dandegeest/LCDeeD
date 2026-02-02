@@ -12,57 +12,57 @@ VisEvent toggleAuto = () -> {
   println("AUTO", autoOn);
 };
 
-// Custom Visualizer Events
-VisEvent toggleCustomVisualizer = () -> {
+// Custom LCDDInput Events
+VisEvent togglesourceInput = () -> {
   for (LCDD lcd : lcds) {
     if (lcd != null) {
-      lcd.toggleVisualizer();
+      lcd.toggleLCDDInput();
     }
   }
   boolean anyEnabled = false;
   for (LCDD lcd : lcds) {
-    if (lcd != null && lcd.getVisualizer() != null && lcd.getVisualizer().isEnabled()) {
+    if (lcd != null && lcd.getLCDDInput() != null && lcd.getLCDDInput().isEnabled()) {
       anyEnabled = true;
       break;
     }
   }
-  println("CUSTOM VISUALIZERS", anyEnabled ? "ON" : "OFF");
+  println("CUSTOM LCDDInputS", anyEnabled ? "ON" : "OFF");
 };
 
-VisEvent cycleCustomVisualizer = () -> {
+VisEvent cyclesourceInput = () -> {
   for (LCDD lcd : lcds) {
     if (lcd != null) {
-      // Cycle between different visualizer types
-      Visualizer current = lcd.getVisualizer();
-      if (current instanceof PulseVisualizer) {
-        lcd.setVisualizer(new GridVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
-      } else if (current instanceof GridVisualizer) {
-        // Create ImageVisualizer with a sample image
-        ImageVisualizer imgVis = new ImageVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height);
+      // Cycle between different LCDDInput types
+      LCDDInput current = lcd.getLCDDInput();
+      if (current instanceof PulseLCDDInput) {
+        lcd.setLCDDInput(new GridLCDDInput(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
+      } else if (current instanceof GridLCDDInput) {
+        // Create ImageLCDDInput with a sample image
+        ImageLCDDInput imgVis = new ImageLCDDInput(lcd.location().x, lcd.location().y, lcd._width, lcd._height);
         imgVis.setImage(sketchPath("") + "imagesDev/testPattern.png"); // You can change this path
-        lcd.setVisualizer(imgVis);
-      } else if (current instanceof ImageVisualizer) {
-        lcd.setVisualizer(new PulseVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
+        lcd.setLCDDInput(imgVis);
+      } else if (current instanceof ImageLCDDInput) {
+        lcd.setLCDDInput(new PulseLCDDInput(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
       } else {
-        // Fallback to PulseVisualizer if unknown type
-        lcd.setVisualizer(new PulseVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
+        // Fallback to PulseLCDDInput if unknown type
+        lcd.setLCDDInput(new PulseLCDDInput(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
       }
       // Keep the same enabled state
       if (current != null && current.isEnabled()) {
-        lcd.enableVisualizer();
+        lcd.enableLCDDInput();
       }
     }
   }
-  println("VISUALIZER TYPE CYCLED");
+  println("LCDDInput TYPE CYCLED");
 };
 
-VisEvent resetCustomVisualizer = () -> {
+VisEvent resetsourceInput = () -> {
   for (LCDD lcd : lcds) {
     if (lcd != null) {
-      lcd.resetVisualizer();
+      lcd.resetLCDDInput();
     }
   }
-  println("CUSTOM VISUALIZERS RESET");
+  println("CUSTOM LCDDInputS RESET");
 };
 
 VisEvent innerConnect = () -> {
@@ -331,10 +331,10 @@ void loadKeyboardEvents() {
   keyEvents.put('8', briteMode1);
   keyEvents.put('9', briteMode2);
 
-  // CUSTOM VISUALIZERS
-  keyEvents.put('f', toggleCustomVisualizer);
-  keyEvents.put('V', cycleCustomVisualizer);
-  keyEvents.put('r', resetCustomVisualizer);
+  // CUSTOM LCDDInputS
+  keyEvents.put('f', togglesourceInput);
+  keyEvents.put('V', cyclesourceInput);
+  keyEvents.put('r', resetsourceInput);
   
   // TV CONTROLS
   //    ON/OFF

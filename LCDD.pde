@@ -3,19 +3,19 @@ import java.util.List;
 class LCDD extends Sprite {
   boolean tvOn = false;
   // Resolution
-  int pwRes = 0; // Pixels per Line
-  int phRes = 0; // Number of lines
+  int pxWidth = 0; // dspPixels width
+  int pxHeight = 0; // dspPixels height
   float pxSize = 3.0; // Pixel size (now supports fractional values)
-  // Compositing Buffer
+  // Display Pixels - pxWidth x pxHeight pixels
+  ArrayList<Pixel> dspPixels = new ArrayList<Pixel>(); 
+  // Compositing Buffer (pxWidth x psSize X pxHeight x pxSize)
   PGraphics backBuffer;
-  // Display Pixels
-  ArrayList<Pixel> _pixels = new ArrayList<Pixel>();
   // Dirty regions for optimized redraw
   ArrayList<int[]> dirtyRects = new ArrayList<int[]>(); // [x1, y1, x2, y2]
-  boolean fullRedraw = false;
   
   // Pre-allocated line arrays for performance
   private List<Pixel>[] cachedHLines;
+  private List<Pixel>[] cachedVLines;
   private boolean linesInitialized = false;
   // Transform
   float scale = 1.0;
@@ -42,8 +42,8 @@ class LCDD extends Sprite {
   int overScanAlpha = 50;
   boolean overScanOn = false;
   
-  // Custom visualizer instance
-  Visualizer customVisualizer;
+  // Custom LCDDInput instance
+  LCDDInput sourceInput;
   
   LCDD(float x, float y, float w, float h, float psize) {
     super(x, y, w, h);
@@ -52,32 +52,40 @@ class LCDD extends Sprite {
     setResolution(w, h, psize);
     
     invalidate();   
-    println("Starting LCDD/TV™", pwRes, phRes, 1 << subPixelDisclination);   
+    println("Starting LCDD/TV™", pxWidth, pxHeight, 1 << subPixelDisclination);   
   }
 
   void setResolution(float w, float h, float psize) {
     pxSize = psize;
     _width = w;
     _height = h;
-    pwRes = floor(_width/pxSize);
-    phRes = floor(_height/pxSize);
+    pxWidth = floor(_width/pxSize);
+    pxHeight = floor(_height/pxSize);
 
-    println("Setting Resolution to", pwRes, "x", phRes, "with pixel size", pxSize);
-    _pixels.clear();  
+    println("Setting Resolution to", pxWidth, "x", pxHeight, "with pixel size", pxSize);
+    dspPixels.clear();  
     
     // Initialize cached line arrays
-    cachedHLines = new List[phRes];
+    cachedHLines = new List[pxHeight];
+    cachedVLines = new List[pxWidth];
     
-    for (int py = 0; py < phRes; py++) {
-      cachedHLines[py] = new ArrayList<Pixel>(pwRes);
-      for (int px = 0; px < pwRes; px++) {
+    for (int py = 0; py < pxHeight; py++) {
+      cachedHLines[py] = new ArrayList<Pixel>(pxWidth);
+    }
+    for (int px = 0; px < pxWidth; px++) {
+      cachedVLines[px] = new ArrayList<Pixel>(pxHeight);
+    }
+    
+    for (int py = 0; py < pxHeight; py++) {
+      for (int px = 0; px < pxWidth; px++) {
         Pixel pixel = new Pixel(
           position.x + px * pxSize,
           position.y + py * pxSize,
           pxSize , pxSize,
-          (py * pwRes) + px, this);
-        _pixels.add(pixel);
+          (py * pxWidth) + px, this);
+        dspPixels.add(pixel);
         cachedHLines[py].add(pixel);
+        cachedVLines[px].add(pixel);
       }
     }
     
@@ -89,42 +97,39 @@ class LCDD extends Sprite {
   }
   
   Pixel pixelAt(int x, int y) {
-    int index = (y * pwRes) + x;
-    if (index >= 0 && index < _pixels.size())
-      return _pixels.get(index);
+    int index = (y * pxWidth) + x;
+    if (index >= 0 && index < dspPixels.size())
+      return dspPixels.get(index);
       
     return null;
   }
   
   List<Pixel> getHLine(int row) {
-    if (row >= 0 && row < phRes && linesInitialized) {
+    if (row >= 0 && row < pxHeight && linesInitialized) {
       return cachedHLines[row]; // Direct access to pre-allocated array
     }
     return null;
   }
   
   List<Pixel> getVLine(int column) {
-    List<Pixel> col_pixels = new ArrayList<Pixel>();
-    for (int row = 0; row < phRes; row++) {
-      int index = column + row * pwRes;
-      col_pixels.add(_pixels.get(index));
+    if (column >= 0 && column < pxWidth && linesInitialized) {
+      return cachedVLines[column]; // Direct access to pre-allocated array
     }
-        
-    return col_pixels;
+    return null;
   }
     
   void update() {
-    // Render custom visualizer if enabled
-    if (customVisualizer != null && customVisualizer.isEnabled()) {
-      customVisualizer.update();
+    // Render custom LCDDInput if enabled
+    if (sourceInput != null && sourceInput.isEnabled()) {
+      sourceInput.update();
       backBuffer.beginDraw();
       if (backgroundOn) {
         backBuffer.background(bgColor);
       }
-      customVisualizer.render(backBuffer);
+      sourceInput.render(backBuffer);
       backBuffer.endDraw();   
       PImage bImage = backBuffer.get();
-      bImage.resize(0, phRes);
+      bImage.resize(0, pxHeight);
       sourceImage(bImage, 0);
     }    
   }
@@ -133,37 +138,35 @@ class LCDD extends Sprite {
     source = null;
     source = loadImage(fname);
     if (source.width > source.height)
-      source.resize(pwRes, 0);
+      source.resize(pxWidth, 0);
     else
-      source.resize(0, phRes);
+      source.resize(0, pxHeight);
 
-    println("Loaded Static Image", pwRes, phRes, source.width, source.height);
+    println("Loaded Static Image", pxWidth, pxHeight, source.width, source.height);
     sourceImage(source, 0);
   }
   
   void sourceImage(PImage image, int brighT) {
-    source = null;
     source = image;
     source.loadPixels();
-    int xoff = (pwRes - source.width) / 2;
-    for (int y = 0; y < phRes; y++) {
-      for (int x = 0; x < pwRes; x++) {
+    int xoff = (pxWidth - source.width) / 2;
+    
+    for (int y = 0; y < pxHeight; y++) {
+      for (int x = 0; x < pxWidth; x++) {
         if (x < source.width && y < source.height) {
-          // Get the color of the pixel at (x, y) in the source image and set the color to the LCDD pixel
+          // Get the color of the pixel at (x, y) in the source image
           int pixelColor = source.get(x, y);
           
-          // Extract the RGB components
-          int a = (int)alpha(pixelColor);
-          int r = (int)red(pixelColor);
-          int g = (int)green(pixelColor);
-          int b = (int)blue(pixelColor);
+          // Cache color components to avoid repeated function calls
+          int a = (pixelColor >> 24) & 0xFF;
+          int r = (pixelColor >> 16) & 0xFF;
+          int g = (pixelColor >> 8) & 0xFF;
+          int b = pixelColor & 0xFF;
           
           Pixel px = pixelAt(xoff + x, y);
-          if (px == null) {
-            continue;
-          }
+          if (px == null) continue;
           
-          if (a == 0 || (brighT > 0 && brightness(pixelColor) < brighT)) { //r < brighT && g < brighT && b < brighT)) {
+          if (a == 0 || (brighT > 0 && brightness(pixelColor) < brighT)) {
             continue;
           }
           else {
@@ -185,7 +188,7 @@ class LCDD extends Sprite {
   }
 
   void rescanLine(int line) {
-    if (line < 0 || line >= phRes)
+    if (line < 0 || line >= pxHeight)
       scanLine = line = 0;
     
     List<Pixel> l = getHLine(line);
@@ -199,8 +202,8 @@ class LCDD extends Sprite {
     if (l == null || source == null)
       return;
       
-    int xoff = (pwRes - source.width) / 2;
-    for (int x = 0; x < pwRes; x++) {
+    int xoff = (pxWidth - source.width) / 2;
+    for (int x = 0; x < pxWidth; x++) {
       if (x < source.width && line < source.height) {
         int pixelColor = source.get(x, line);
         
@@ -230,18 +233,16 @@ class LCDD extends Sprite {
   
   void scanComplete() {
     dirtyRects.clear();
-    fullRedraw = false;
   }
 
   void invalidate() {
     dirtyRects.clear();
-    dirtyRects.add(new int[]{0, 0, pwRes-1, phRes-1});
-    fullRedraw = true;
+    dirtyRects.add(new int[]{0, 0, pxWidth-1, pxHeight-1});
   }
   
   void invalidate(Pixel pixel) {
-    int px = pixel.pixelIndex % pwRes;
-    int py = pixel.pixelIndex / pwRes;
+    int px = pixel.pixelIndex % pxWidth;
+    int py = pixel.pixelIndex / pxWidth;
     addDirtyRect(px, py, px, py);
   }
   
@@ -275,18 +276,14 @@ class LCDD extends Sprite {
     if (scanInterval > 0)
       scanner();
     
-    // Optimized dirty region rendering
-    if (fullRedraw) {
-      for (Pixel pixel : _pixels) {
-        pixel.display();
-      }
-    } else {
-      // Only render dirty rectangles
-      for (int[] rect : dirtyRects) {
-        for (int y = rect[1]; y <= rect[3]; y++) {
+    // Dirty region rendering with optimized pixel access
+    for (int[] rect : dirtyRects) {
+      for (int y = rect[1]; y <= rect[3]; y++) {
+        if (y >= 0 && y < pxHeight) {
+          int rowStart = y * pxWidth;
           for (int x = rect[0]; x <= rect[2]; x++) {
-            if (x >= 0 && x < pwRes && y >= 0 && y < phRes) {
-              _pixels.get(y * pwRes + x).display();
+            if (x >= 0 && x < pxWidth) {
+              dspPixels.get(rowStart + x).display();
             }
           }
         }
@@ -303,19 +300,19 @@ class LCDD extends Sprite {
   
   void scanner() {
     if (scanLine == 0) {
-      pvscanLine = phRes - 1;
+      pvscanLine = pxHeight - 1;
     }
 
     // Only update pixels if scanline actually moved
     int currentScanLine = floor(scanLine);
     if (currentScanLine != pvscanLine) {
       // Bounds check for previous scanline
-      if (pvscanLine >= 0 && pvscanLine < phRes) {
+      if (pvscanLine >= 0 && pvscanLine < pxHeight) {
         // Restore previous scanline to original colors
-        int startIdx = pvscanLine * pwRes;
-        if (startIdx >= 0 && startIdx + pwRes <= _pixels.size()) {
-          for (int i = 0; i < pwRes; i++) {
-            Pixel pixel = _pixels.get(startIdx + i);
+        int startIdx = pvscanLine * pxWidth;
+        if (startIdx >= 0 && startIdx + pxWidth <= dspPixels.size()) {
+          for (int i = 0; i < pxWidth; i++) {
+            Pixel pixel = dspPixels.get(startIdx + i);
             // Only restore if it was the scanline (bright white: 0xFFFFFF)
             if (pixel.getRGB() == 0xFFFFFF) {
               pixel.restoreOriginalColor();
@@ -325,12 +322,12 @@ class LCDD extends Sprite {
       }
       
       // Bounds check for current scanline
-      if (currentScanLine >= 0 && currentScanLine < phRes) {
+      if (currentScanLine >= 0 && currentScanLine < pxHeight) {
         // Set new scanline to bright
-        int startIdx = currentScanLine * pwRes;
-        if (startIdx >= 0 && startIdx + pwRes <= _pixels.size()) {
-          for (int i = 0; i < pwRes; i++) {
-            Pixel pixel = _pixels.get(startIdx + i);
+        int startIdx = currentScanLine * pxWidth;
+        if (startIdx >= 0 && startIdx + pxWidth <= dspPixels.size()) {
+          for (int i = 0; i < pxWidth; i++) {
+            Pixel pixel = dspPixels.get(startIdx + i);
             pixel.saveOriginalColor(); // Store current color
             pixel.setRGB(255, 255, 255, pixel.lumos);
           }
@@ -341,48 +338,48 @@ class LCDD extends Sprite {
     }
     
     scanLine += scanInterval;
-    if (scanLine >= phRes) {
+    if (scanLine >= pxHeight) {
       scanLine = 0;
     }
   }
   
-  // Visualizer control methods
-  void setVisualizer(Visualizer visualizer) {
-    if (visualizer != null) {
-      this.customVisualizer = visualizer;
-      this.customVisualizer.setBounds(position.x, position.y, _width, _height);
+  // LCDDInput control methods
+  void setLCDDInput(LCDDInput LCDDInput) {
+    if (LCDDInput != null) {
+      this.sourceInput = LCDDInput;
+      this.sourceInput.setBounds(position.x, position.y, _width, _height);
     }
   }
   
-  void enableVisualizer() {
-    if (customVisualizer != null) {
-      customVisualizer.enable();
+  void enableLCDDInput() {
+    if (sourceInput != null) {
+      sourceInput.enable();
     }
   }
   
-  void disableVisualizer() {
-    if (customVisualizer != null) {
-      customVisualizer.disable();
+  void disableLCDDInput() {
+    if (sourceInput != null) {
+      sourceInput.disable();
     }
   }
   
-  void toggleVisualizer() {
-    if (customVisualizer != null) {
-      if (customVisualizer.isEnabled()) {
-        customVisualizer.disable();
+  void toggleLCDDInput() {
+    if (sourceInput != null) {
+      if (sourceInput.isEnabled()) {
+        sourceInput.disable();
       } else {
-        customVisualizer.enable();
+        sourceInput.enable();
       }
     }
   }
   
-  void resetVisualizer() {
-    if (customVisualizer != null) {
-      customVisualizer.reset();
+  void resetLCDDInput() {
+    if (sourceInput != null) {
+      sourceInput.reset();
     }
   }
   
-  Visualizer getVisualizer() {
-    return customVisualizer;
+  LCDDInput getLCDDInput() {
+    return sourceInput;
   }
 }
