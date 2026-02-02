@@ -12,106 +12,54 @@ VisEvent toggleAuto = () -> {
   println("AUTO", autoOn);
 };
 
-VisEvent toggleHito = () -> {
-  hitoOn = !hitoOn;
-  println("HITODAMA", hitoOn);
+// Custom Visualizer Events
+VisEvent toggleCustomVisualizer = () -> {
+  for (LCDD lcd : lcds) {
+    if (lcd != null) {
+      lcd.toggleVisualizer();
+    }
+  }
+  boolean anyEnabled = false;
+  for (LCDD lcd : lcds) {
+    if (lcd != null && lcd.getVisualizer() != null && lcd.getVisualizer().isEnabled()) {
+      anyEnabled = true;
+      break;
+    }
+  }
+  println("CUSTOM VISUALIZERS", anyEnabled ? "ON" : "OFF");
 };
 
-VisEvent toggleFlies = () -> {
-  flies.fliesOn = !flies.fliesOn;
-  println("FireFlies", flies.fliesOn);
+VisEvent cycleCustomVisualizer = () -> {
+  for (LCDD lcd : lcds) {
+    if (lcd != null) {
+      // Cycle between different visualizer types
+      Visualizer current = lcd.getVisualizer();
+      if (current instanceof PulseVisualizer) {
+        lcd.setVisualizer(new GridVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
+      } else if (current instanceof GridVisualizer) {
+        lcd.setVisualizer(new PulseVisualizer(lcd.location().x, lcd.location().y, lcd._width, lcd._height));
+      }
+      // Keep the same enabled state
+      if (current != null && current.isEnabled()) {
+        lcd.enableVisualizer();
+      }
+    }
+  }
+  println("VISUALIZER TYPE CYCLED");
 };
 
-VisEvent togglePhases = () -> {
-    slideNumber = lastPhase;
-    setSlideGroup("Phases");
-};
-
-VisEvent toggleGrass = () -> {
-  flies.grassOn = !flies.grassOn;
-  println("Grass", flies.grassOn);
-};
-
-VisEvent toggleInnerDD = () -> {
-  inDDon = !inDDon;
-  println("INNERDDEMON", inDDon);
-};
-
-VisEvent toggleFire = () -> {
-  fireOn = !fireOn;
-  println("FIRE", fireOn);
-};
-
-VisEvent toggleSchiff = () -> {
-  schiffOn = !schiffOn;
-  println("SCHIFFON", schiffOn);
-};
-
-VisEvent toggleSlides = () -> {
-  contentMode++;
-  if (contentMode == 3) contentMode = CONTENT_OFF;
-  String modeText = (contentMode == CONTENT_OFF) ? "OFF" : 
-                   (contentMode == CONTENT_BACKGROUND) ? "BACKGROUND" : "OVERLAY";
-  println("CONTENT MODE", modeText);
+VisEvent resetCustomVisualizer = () -> {
+  for (LCDD lcd : lcds) {
+    if (lcd != null) {
+      lcd.resetVisualizer();
+    }
+  }
+  println("CUSTOM VISUALIZERS RESET");
 };
 
 VisEvent innerConnect = () -> {
   connected = !connected;
   println(key, "INNERCONNECTED", connected);
-};
-
-VisEvent rewindMovie = () -> { 
-  if (movie == null) return;
-  movie.stop();
-  movie.jump(0);
-  movie.play();
-  movie.volume(0);
-  println("Restart movie");
-};
-
-VisEvent closeMovie = () -> {
-  if (movie  == null) return;
-  movie.stop();
-  movie = null;
-  println("Close movie", movieNumber, movieTitles.get(movieNumber));
-};
-
-VisEvent nextMovie = () -> { 
-  closeMovie.fire();
-  movieNumber++;
-  if (movieNumber == movieTitles.size()) movieNumber = 0;
-  movie = new Movie(this, movieTitles.get(movieNumber));
-  movie.play();  
-  movie.volume(0);
-  println("New movie", movieNumber, movieTitles.get(movieNumber));
-};
-
-VisEvent videoToggle = () -> {
-  if(video == null) {
-    String[] cameras = Capture.list();
-    printArray(cameras);
-    video = new Capture(this, lcds[0].pwRes, lcds[0].phRes, cameras[0]);
-    println("Video init", video.pixelWidth, video.pixelHeight);
-  }
-  videoOn = !videoOn;
-  
-  if (videoOn) {
-    closeMovie.fire();
-    video.start();
-  }
-  else {
-    video.stop();
-  }
-  println(key, "Video", videoOn);
-};
-
-VisEvent resetVis = () -> {
-  slide = nextSlide(slideGroup);
-  if (inDDon)
-    innerDD.spawn((int)random(10,200));
-  if (flies.fliesOn)
-    flies.hatch(int(random(50, 200)));
-  println("Next Slide in " + slideGroup, "Spawn InnerDD", "Hatch Flies");
 };
 
 VisEvent toggleDebug = () -> {
@@ -125,8 +73,8 @@ VisEvent toggleBackground = () -> {
     lcds[i].invalidate();
     
   if (backgroundOn == false) {
-    backBuffer.clear();  // Clear all pixels to transparent
-    backBuffer.background(0, 0, 0, 0); 
+    //backBuffer.clear();  // Clear all pixels to transparent
+    //backBuffer.background(0, 0, 0, 0); 
   }
   println("BACKGROUND", backgroundOn);
 };
@@ -146,14 +94,6 @@ VisEvent resetTint = () -> {
   println("TINT", red(slideTint), green(slideTint), blue(slideTint));
 }; 
 
-VisEvent randomLyricColor = () -> {
-  lyricColor = palette[(int)random(palette.length)];
-  if (lyricColor == black) {
-    lyricColor = color(random(255), random(255), random(255));
-  }
-  println("LYRIC COLOR", red(lyricColor), green(lyricColor), blue(lyricColor));
-}; 
-
 VisEvent backgroundTint = () -> {
   bgColor = slideTint;
   println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
@@ -166,14 +106,6 @@ VisEvent resetAll = () -> {
     lcds[i].transY = 0.0;
   }
   println("RESET");
-};
-
-VisEvent growGrass = () -> {
-  flies.grassHeight(flies.grassH-=.1);
-};
-
-VisEvent mowGrass = () -> {
-  flies.grassHeight(flies.grassH+=.1);
 };
 
 VisEvent saveFrame = () -> {
@@ -210,66 +142,6 @@ VisEvent scaleUp = () -> {
 VisEvent scaleDown = () -> {
   lcds[input].scale -= .5;
   println("SCALE TV", input, lcds[input].scale);
-};
-
-VisEvent toggleLyrics = () -> {
-  lyricsOn = !lyricsOn;
-  println("LYRICS", lyricsOn);
-};
-
-VisEvent lyricsChange = () -> {
-  lyricChange();
-  println("Lyric Change");
-  printArray(lyric);
-};
-
-VisEvent nextLyric = () -> {
-  word++;
-  if (word >= lyric.length) word = 0;
-  lyricFade = 0;
-  lyricSize = random(100, 200);
-  println("Next Lyric->" + lyric[word]);
-};
-
-VisEvent incLyricFont = () -> {
-  lyricFont++;
-  if (lyricFont == lyricFonts.length) lyricFont = 0;
-};
-
-VisEvent randomSchiff = () -> {
-  if (!schiffOn) return;
-  schiff.setLevel((int)random(width/2));
-  println("RND SCHIFF", schiff.tLevel);
-};
-
-void effigyUpdate() {
-  if (effigyOn) {
-    lcds[0].overScanOn = true;
-    lcds[0].logoOn = earthPuzzOn;
-    
-    lcds[1].overScanOn = true;
-    lcds[1].logoOn = windPuzzOn;
-    
-    lcds[2].overScanOn = true;
-    lcds[2].logoOn = firePuzzOn;
-    
-    lcds[3].overScanOn = true;
-    lcds[3].logoOn = waterPuzzOn;
-  }
-}
-
-VisEvent toggleEffigy = () -> {
-  effigyOn = !effigyOn;
-  splitScreen(effigyOn);
-  if (effigyOn) {
-    effigyUpdate();
-  }
-  else {
-    lcds[0].logoOn = false;
-    lcds[1].logoOn = false;
-    lcds[2].logoOn = false;
-    lcds[3].logoOn = false;    
-  }
 };
 
 void toggleTV(int tv) {
@@ -395,7 +267,6 @@ VisEvent splitScreen = () -> {
   }
   else {
     splitScreen(false);
-    if (effigyOn) toggleEffigy.fire();
   }
 };
   
@@ -425,21 +296,6 @@ VisEvent toggleLogo = () -> {
   println("LOGO", input, lcds[input].logoOn);
 };
 
-VisEvent slidesDev = () -> {   
-  setSlideGroup("Dev");
-};
-
-VisEvent slidesFire = () -> {   
-  setSlideGroup("Fire");
-};
-
-VisEvent slidesWiitch = () -> {   
-  setSlideGroup("Wiitch");
-};
-
-VisEvent slidesMoon = () -> {   
-  setSlideGroup("Moon");
-};
 
 VisEvent innerDDieMode1 = () -> {   
   innerDDieMode = 1;
@@ -449,35 +305,6 @@ VisEvent innerDDieMode1 = () -> {
 VisEvent innerDDieMode2 = () -> {   
   innerDDieMode = 2;
   println("INNERDDie", innerDDieMode);
-};
-
-VisEvent slideBrighTInc = () -> {  
-  slideBrighT+=5;
-  if (slideBrighT > 255)
-    slideBrighT = 255;
-  println("SLIDE BRIGHT", slideBrighT);
-};
-
-VisEvent slideBrighTDec = () -> { 
-  slideBrighT-=5;
-  if (slideBrighT < 0)
-    slideBrighT = 0;
-  println("SLIDE BRIGHT", slideBrighT);
-};
-
-VisEvent pinkMoonFinale = () -> {  
-  line = 0;
-  lyric = lyrics.get(line);
-  word = 3;
-  lyricFade = 10;
-  lyricColor = whiteDD;
-  lyricFont = 2;
-  contentMode = CONTENT_BACKGROUND;
-  slideNumber = 116;
-  slideGroup = "Phases";
-  slide = nextSlide(slideGroup);
-  lyricsOn = true;
-  slideGroup = "Puzzle";
 };
 
 void loadKeyboardEvents() {
@@ -496,28 +323,10 @@ void loadKeyboardEvents() {
   keyEvents.put('8', briteMode1);
   keyEvents.put('9', briteMode2);
 
-  // LYRICS
-  keyEvents.put('j', nextLyric);
-  keyEvents.put('J', lyricsChange);
-  keyEvents.put('K', toggleLyrics);
-  keyEvents.put('k', randomLyricColor);
-  keyEvents.put('l', incLyricFont);
-
-  // EFFIGY
-  keyEvents.put('e', toggleEffigy);
-  keyEvents.put('E', pinkMoonFinale);
-
-  // VISUALIZERS
-  keyEvents.put('f', toggleFire);
-  keyEvents.put('h', toggleHito);
-  keyEvents.put('i', toggleInnerDD);
-  keyEvents.put('I', innerConnect);
-  keyEvents.put('o', toggleFlies);
-  keyEvents.put('O', toggleGrass);
-  keyEvents.put('[', mowGrass);
-  keyEvents.put(']', growGrass);
-  keyEvents.put('p', toggleSchiff);
-  keyEvents.put('s', toggleSlides);
+  // CUSTOM VISUALIZERS
+  keyEvents.put('f', toggleCustomVisualizer);
+  keyEvents.put('V', cycleCustomVisualizer);
+  keyEvents.put('r', resetCustomVisualizer);
   
   // TV CONTROLS
   //    ON/OFF
@@ -553,44 +362,16 @@ void loadKeyboardEvents() {
   
   // RESETS
   keyEvents.put('0', resetAll);
-  keyEvents.put(BACKSPACE, resetVis);
-  
-  // SLIDES
-  keyEvents.put('g', slidesFire);
-  keyEvents.put('G', slidesDev);
-  keyEvents.put('w', slidesWiitch);
-  keyEvents.put('W', slidesMoon);
-  keyEvents.put('P', togglePhases);
-  
-  // Movies
-  keyEvents.put('u', rewindMovie);
-  keyEvents.put('U', nextMovie);
-  keyEvents.put('T', closeMovie);
-  
-  // Video
-  keyEvents.put('v', videoToggle);
-  
-  // TRANSPARENCY
-  keyEvents.put('y', slideBrighTInc);
-  keyEvents.put('Y', slideBrighTDec);
-
+    
   // TOOL
   keyEvents.put('D', toggleDebug);
   keyEvents.put(ENTER, saveFrame);
 }
 
 void loadTimerEvents() {
-  fx.add(toggleHito);
-  fx.add(toggleInnerDD);
   fx.add(innerConnect);
   fx.add(innerDDieMode1);
   fx.add(innerDDieMode2);
-  fx.add(toggleFlies);
-  fx.add(toggleGrass);
-  fx.add(mowGrass);
-  fx.add(growGrass);
-  fx.add(toggleSchiff);
-  fx.add(toggleSlides);
 
   fx.add(overScanToggle);
   fx.add(overScanColor);
@@ -609,20 +390,7 @@ void loadTimerEvents() {
   fx.add(briteMode1);
   fx.add(briteMode2);
   
-  fx.add(slideBrighTInc);
-  fx.add(slideBrighTDec);
-  
-  //fx.add(slidesWiitch);
-  //fx.add(slidesMoon);
-  //fx.add(togglePhases);
-  
   fx.add(randomTint);
   fx.add(backgroundTint);
-  
-  fx.add(nextLyric);
-  fx.add(lyricsChange);
-  fx.add(toggleLyrics);
-  fx.add(randomLyricColor);
-  
-  fx.add(randomSchiff);
+
 }

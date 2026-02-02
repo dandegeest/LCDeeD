@@ -196,6 +196,9 @@ The system uses a comprehensive event system (`VisEvents.pde`) that maps keyboar
 - **%**: Toggle auto mode
 - **0**: Reset all settings
 - **Backspace**: Reset visualizers
+- **v**: Toggle custom visualizers on/off
+- **V**: Cycle through custom visualizer types
+- **r**: Reset custom visualizers
 - **D**: Toggle debug display
 - **Enter**: Save frame
 

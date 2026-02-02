@@ -6,6 +6,8 @@ class LCDD extends Sprite {
   int pwRes = 0; // Pixels per Line
   int phRes = 0; // Number of lines
   int pxSize = 3; // Pixel size ( 3 X 3 -> Each subpixel is 1 X 3
+  // Compositing Buffer
+  PGraphics backBuffer;
   // Display Pixels
   ArrayList<Pixel> _pixels = new ArrayList<Pixel>();
   // Dirty regions for optimized redraw
@@ -40,9 +42,17 @@ class LCDD extends Sprite {
   int overScanAlpha = 50;
   boolean overScanOn = false;
   
+  // Custom visualizer instance
+  Visualizer customVisualizer;
+  
   LCDD(float x, float y, float w, float h, int psize) {
     super(x, y, w, h);
+    backBuffer = createGraphics((int)w, (int)h);
     setResolution(w, h, psize);
+    
+    // Initialize with pulse visualizer by default
+    customVisualizer = new PulseVisualizer(position.x, position.y, w, h);
+    
     invalidate();   
     println("Starting LCDD/TV™", pwRes, phRes, 1 << subPixelDisclination);   
   }
@@ -105,6 +115,19 @@ class LCDD extends Sprite {
     return col_pixels;
   }
     
+  void update() {
+    // Render custom visualizer if enabled
+    if (customVisualizer != null && customVisualizer.isEnabled()) {
+      customVisualizer.update();
+      backBuffer.beginDraw();
+      customVisualizer.render(backBuffer);
+      backBuffer.endDraw();   
+      PImage bImage = backBuffer.get();
+      bImage.resize(0, phRes);
+      sourceImage(bImage, 0);
+    }    
+  }
+
   void sourceImage(String fname) {
     source = null;
     source = loadImage(fname);
@@ -173,7 +196,7 @@ class LCDD extends Sprite {
       }
     }
     
-    if (source == null)
+    if (l == null || source == null)
       return;
       
     int xoff = (pwRes - source.width) / 2;
@@ -271,7 +294,7 @@ class LCDD extends Sprite {
     }
     
     popMatrix();
-    
+
     if (pipOn)
       image(source, location().x + _width - source.width, location().y + _height - source.height);
     
@@ -321,5 +344,45 @@ class LCDD extends Sprite {
     if (scanLine >= phRes) {
       scanLine = 0;
     }
+  }
+  
+  // Visualizer control methods
+  void setVisualizer(Visualizer visualizer) {
+    if (visualizer != null) {
+      this.customVisualizer = visualizer;
+      this.customVisualizer.setBounds(position.x, position.y, _width, _height);
+    }
+  }
+  
+  void enableVisualizer() {
+    if (customVisualizer != null) {
+      customVisualizer.enable();
+    }
+  }
+  
+  void disableVisualizer() {
+    if (customVisualizer != null) {
+      customVisualizer.disable();
+    }
+  }
+  
+  void toggleVisualizer() {
+    if (customVisualizer != null) {
+      if (customVisualizer.isEnabled()) {
+        customVisualizer.disable();
+      } else {
+        customVisualizer.enable();
+      }
+    }
+  }
+  
+  void resetVisualizer() {
+    if (customVisualizer != null) {
+      customVisualizer.reset();
+    }
+  }
+  
+  Visualizer getVisualizer() {
+    return customVisualizer;
   }
 }
