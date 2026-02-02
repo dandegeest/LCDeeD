@@ -67,7 +67,7 @@ void setup() {
   lcds[0] = new LCDD(0, 0, width, height, 1.5);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
-  lcds[0].customVisualizer = new PulseVisualizer(0, 0, width, height);
+  lcds[0].customVisualizer = new FireFliesVisualizer(0, 0, width, height);
   lcds[0].enableVisualizer();
   
   // Split screens

@@ -2,31 +2,61 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Collections;
 
-class FireFlies {
-  ArrayList<FireFly> fireFlies = new ArrayList<FireFly>();
+class FireFliesVisualizer extends Visualizer {
+  ArrayList<FireFly> fireFlies;
   PGraphics fg;
-  ArrayList<Integer> colors = new ArrayList<Integer>();
-  ArrayList<PVector[]> grass = new ArrayList<PVector[]>();
+  ArrayList<Integer> colors;
+  ArrayList<PVector[]> grass;
   float grassH = 1.8;
   int windDir = 1;
   float wind = 1;
-  boolean fliesOn = false;
-  boolean grassOn = false;
+  boolean fliesOn = true;
+  boolean grassOn = true;
   
-  FireFlies(int w, int h) {
+  FireFliesVisualizer(float x, float y, float w, float h) {
+    super(x, y, w, h);
+  }
+  
+  protected void initialize() {
+    fireFlies = new ArrayList<FireFly>();
+    colors = new ArrayList<Integer>();
+    grass = new ArrayList<PVector[]>();
+    fg = createGraphics((int)w, (int)h);
+    colors.clear();
     for (int i = 0; i < 32; i++) {
       int range = (int)random(0,80);
       colors.add(color(255-range));
     }
-
-    fg = createGraphics(w, h);
+    // PGraphics creation moved to render() method
     hatch(100);
+  }
+  
+  public void render(PGraphics buffer) {
+    if (!enabled) return;
+    
+    buffer.push();
+    
+    if (fliesOn) {
+      for (FireFly f : fireFlies) {
+        f.update();
+        f.relate();
+        f.mutate();
+        f.display(buffer);
+      }
+    }
+
+    if (grassOn) {
+      drawGrass();
+      buffer.image(fg, 0, h / 10);
+    }
+    
+    buffer.pop();
   }
   
   void hatch(int flies) {
     fireFlies.clear();
     for (int i = 0; i < flies; i++) {
-      fireFlies.add(new FireFly(random(width), random(height)));
+      fireFlies.add(new FireFly(random(w), random(h)));
     }
   }
   
@@ -41,11 +71,11 @@ class FireFlies {
     fg.clear();
     fg.fill(lerpColor(slideTint, color(55, 89, 55), .5));
     fg.noStroke();
-    float gH = height / grassH;
+    float gH = h / grassH;
     
-    for (int x = 0; x <= width; x += gStep) {
+    for (int x = 0; x <= w; x += gStep) {
       fg.beginShape();
-      fg.vertex(x, height-height/20);
+      fg.vertex(x, h-h/20);
       
       PVector[] blade;
       if (x/gStep >= grass.size()) {
@@ -53,7 +83,7 @@ class FireFlies {
         blade = new PVector[3];
         blade[0] = new PVector(random(-gH, gH), random(-gH/2, gH/2));
         blade[1] = new PVector(random(-gH, gH), random(-gH/2, gH/2));
-        blade[2] = new PVector(x+random(-gH/2, gH/2), height-gH + random(-gH/4, gH/4));
+        blade[2] = new PVector(x+random(-gH/2, gH/2), h-gH + random(-gH/4, gH/4));
         grass.add(blade);
       }
       else {
@@ -72,8 +102,8 @@ class FireFlies {
       }
       
       //fg.ellipse(tip.x, tip.y, 3, 3);
-      fg.bezierVertex(x+xoff1, height-yoff1, x+xoff2, height-yoff2, tip.x, tip.y);
-      fg.bezierVertex(x+xoff2+20, height-yoff2, x+xoff1+20, height-yoff1, x+20, height-height/20);  
+      fg.bezierVertex(x+xoff1, h-yoff1, x+xoff2, h-yoff2, tip.x, tip.y);
+      fg.bezierVertex(x+xoff2+20, h-yoff2, x+xoff1+20, h-yoff1, x+20, h-h/20);  
       fg.endShape(CLOSE);
     }
     fg.endDraw();
@@ -119,15 +149,15 @@ class FireFlies {
       angle = vel.heading();
   
       if (pos.x < -10) {
-        pos.x = width + 10;
+        pos.x = w + 10;
       }
-      if (pos.x > width + 10) {
+      if (pos.x > w + 10) {
         pos.x = -10;
       }
       if (pos.y < -10) {
-        pos.y = height + 10;
+        pos.y = h + 10;
       }
-      if (pos.y > height + 10) {
+      if (pos.y > h + 10) {
         pos.y = -10;
       }
     }
