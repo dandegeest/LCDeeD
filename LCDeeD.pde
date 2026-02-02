@@ -50,7 +50,7 @@ void setup() {
   //fullScreen();
   
   lcds = new LCDD[4];
-  lcds[0] = new LCDD(0, 0, width, height, 1.5);
+  lcds[0] = new LCDD(0, 0, width, height, 3.0);
   lcds[0].tvOn = true;
   lcds[0].scanInterval = 2;
   lcds[0].sourceInput = new FireFliesLCDDInput(0, 0, width, height);
