@@ -76,35 +76,9 @@ VisEvent toggleDebug = () -> {
 };
 
 VisEvent toggleBackground = () -> {
-  backgroundOn = !backgroundOn;
-  for (int i = 0; i < lcds.length; i++) {
-    lcds[i].invalidate();
-    if (backgroundOn == false) {
-      //lcds[i].backBuffer.clear();  // Clear all pixels to transparent
-      //lcds[i].backBuffer.background(0, 0, 0, 0); 
-    }
-  }
-  println("BACKGROUND", backgroundOn);
-};
-
-VisEvent backgroundColorReset = () -> {
-  bgColor = black;//color((int)random(255), 0);//black;
-  println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
-};
-
-VisEvent randomTint = () -> {
-  slideTint = palette[(int)random(palette.length)];
-  println("TINT", red(slideTint), green(slideTint), blue(slideTint));
-}; 
-
-VisEvent resetTint = () -> {
-  slideTint = whiteDD;
-  println("TINT", red(slideTint), green(slideTint), blue(slideTint));
-}; 
-
-VisEvent backgroundTint = () -> {
-  bgColor = slideTint;
-  println("BACKGROUND RESET", red(bgColor), green(bgColor), blue(bgColor));
+  lcds[input].eraseBackground = !lcds[input].eraseBackground;
+  lcds[input].invalidate();
+  println("BACKGROUND", lcds);
 };
 
 VisEvent resetAll = () -> {
@@ -200,13 +174,15 @@ VisEvent centerScaleTV = () -> {
 };
 
 VisEvent overScanColor = () -> {
-  color c = palette[(int)random(palette.length)];
+  Object[] colorNames = palette.keySet().toArray();
+  String randomColorName = (String) colorNames[(int)random(colorNames.length)];
+  color c = palette.get(randomColorName);
   lcds[input].overScanColor = c;
   println("Overscan Color TV " + input, red(c), green(c), blue(c));
 };
 
 VisEvent overScanColorReset = () -> {
-  lcds[input].overScanColor = black;
+  lcds[input].overScanColor = blackDD;
   println("Overscan Color Reset TV " + input);
 };
 
@@ -320,10 +296,6 @@ void loadKeyboardEvents() {
   
   // BACK BUFFER
   keyEvents.put('b', toggleBackground);
-  keyEvents.put('a', randomTint);
-  keyEvents.put('A', backgroundTint);
-  keyEvents.put('c', backgroundColorReset);
-  keyEvents.put('C', resetTint);
   
   // PIXELS
   keyEvents.put(':', pixelMode);
@@ -397,8 +369,4 @@ void loadTimerEvents() {
   fx.add(briteMode0);
   fx.add(briteMode1);
   fx.add(briteMode2);
-  
-  fx.add(randomTint);
-  fx.add(backgroundTint);
-
 }

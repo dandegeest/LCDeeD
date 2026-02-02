@@ -16,7 +16,7 @@ abstract class LCDDInput {
     this.w = w;
     this.h = h;
     this.primaryColor = color(blueDD);
-    this.secondaryColor = color(purpleDD);
+    this.secondaryColor = color(reDD);
     initialize();
   }
   

@@ -1,52 +1,38 @@
 // LCDeeD - An LCD TV rendering simulation for Processing
 // © Dan DeGeest 2024
 
+import java.util.HashMap;
+
 // The LCDD/TV Screens 2 X 2 or single enlarged
 LCDD lcds[];
 
-color[] palette = new color[]{
+HashMap<String, Integer> palette = new HashMap<String, Integer>() {{
   //RetroTV
-  #1c1c1c, // Dark Grey
-  #6b6b6b, // Medium Grey
-  #b1b1b1, // Light Grey
-  #670000, // Dark Red
-  #8a0707, // Red
-  #b91313, // Light Red
-  #e51919, // Bright Red
-  #005915, // Dark Green
-  #008721, // Green
-  #0daf30, // Light Green
-  #10e538, // Bright Green
-  #000d99, // Dark Blue
-  #0030ff, // Blue
-  #4683ff, // Light Blue
-  #6ba4ff  // Bright Blue
-};
-// Colors
-color reDD = palette[6];
-color greenDD = palette[9];
-color blueDD = palette[13];
-color whiteDD = palette[3];
-color black = palette[0];
-color yellowDD = color(222, 222, 0);
-color purpleDD = color(30, 20, 60);
-color pinkDD = color(255, 192, 203);
-color pinkDD2 = color(255, 105, 180);
-color neonDD = color(255, 105, 180);
-color neonDD2 = color(255, 20, 147);
+  put("darkGrey", #1c1c1c);
+  put("mediumGrey", #6b6b6b);
+  put("lightGrey", #b1b1b1);
+  put("darkRed", #670000);
+  put("red", #8a0707);
+  put("lightRed", #b91313);
+  put("brightRed", #e51919);
+  put("darkGreen", #005915);
+  put("green", #008721);
+  put("lightGreen", #0daf30);
+  put("brightGreen", #10e538);
+  put("darkBlue", #000d99);
+  put("blue", #0030ff);
+  put("lightBlue", #4683ff);
+  put("brightBlue", #6ba4ff);
+}};
+// Quick Colors
+color reDD = palette.get("red");
+color greenDD = palette.get("green");
+color blueDD = palette.get("blue");
+color whiteDD = palette.get("lightGrey");
+color blackDD = palette.get("darkGrey");
 
-color bgColor = black;
-color slideTint = neonDD2;
-
-// Content rendering modes
-final int CONTENT_OFF = 0;
-final int CONTENT_BACKGROUND = 1;
-final int CONTENT_OVERLAY = 2;
-
-// Playback options
-boolean backgroundOn = false;
+// Runtime options
 boolean debugOn = false;
-
 boolean autoOn = false;
 
 //Active TV Input
@@ -73,7 +59,7 @@ void setup() {
   // Split screens
   lcds[1] = new LCDD(width/2, 0, width/2, height/2, 1.5);
   lcds[1].scanInterval = 1.5;
-  lcds[1].overScanColor = neonDD;
+  lcds[1].overScanColor = palette.get("lightGreen");
   lcds[1].overScanOn = true;
   lcds[1].overScanSize = 5;
   lcds[1].overScanInterval = 10;
@@ -119,7 +105,6 @@ void setup() {
   };
 }
 
-// LCDDRAW
 void draw() { 
   timer(fxTimer);
   timer(zoomTimer);
@@ -171,90 +156,6 @@ void drawOSD() {
     fill(128, 255, 128);
     textSize(12);
     text(nf(frameRate, 2, 2), 0, 0, 200, 50);
-
-    textAlign(LEFT, CENTER);
-    noFill();
-    stroke(reDD);
-    strokeWeight(10);
-    line(0, indY, 40, indY);
-    indY+=indH;
-    noStroke();
-    fill(slideTint == black ? color(255, 20) : slideTint);
-    rect(0, indY, indW, indH);
-    indY+=indH;   
-    textSize(10);
-    fill(bgColor);
-    rect(0, indY, indW, indH);
-    fill(bgColor == black ? whiteDD : black);
-    text("BG " + backgroundOn, 0, indY, indW, indH);
-    indY+=indH;
-
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-    text("Z:" + nf(lcds[input].scale, 0, 2), 0, indY, indW, indH);
-
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-    text("X:" + nf(lcds[input].transX, 0, 2), 0, indY, indW, indH);
-    
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-    text("Y:" + nf(lcds[input].transY, 0, 2), 0, indY, indW, indH);
-    
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-    text("Input:" + input, 0, indY, indW, indH);
-    
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-    text("DISC:" + (1 << subPixelDisclination), 0, indY, indW, indH);
-    
-    indY+=indH;   
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    for (int i = 0; i < 4; i++) {    
-      if (lcds[i].overScanOn) {
-        fill(lcds[i].overScanColor);
-        rect(i * indW/4, indY, indW/4, indH);
-      }
-    }
-    
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    for (int i = 0; i < 4; i++) {    
-      fill(black);
-      text(nf(lcds[i].lumosMode), i * indW/4, indY, indW/4, indH);
-    }
-
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    for (int i = 0; i < 4; i++) {    
-      fill(black);
-      text(lcds[i].centerScale ? "|<>|" : "|__|", i * indW/4, indY, indW/4, indH);
-    }
-
-    indY+=indH;
-    fill(whiteDD);
-    rect(0, indY, indW, indH);
-    fill(black);
-    text(autoOn ? "AUTO" : "OFF", 0, indY, indW, indH);
-
     pop();
   }
 }

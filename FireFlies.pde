@@ -69,7 +69,7 @@ class FireFliesLCDDInput extends LCDDInput {
     int gStep = 10;
     fg.beginDraw();
     fg.clear();
-    fg.fill(lerpColor(slideTint, color(55, 89, 55), .5));
+    fg.fill(lerpColor(palette.get("darkBlue"), color(55, 89, 55), .5));
     fg.noStroke();
     float gH = h / grassH;
     
@@ -182,7 +182,7 @@ class FireFliesLCDDInput extends LCDDInput {
         }
       }
       if (lit == 1) {
-        fcolor = lerpColor(fcolor, slideTint, random(0.5, 1.0));
+        fcolor = lerpColor(fcolor, palette.get("darkBlue"), random(0.5, 1.0));
       }
     }
   

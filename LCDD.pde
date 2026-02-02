@@ -41,6 +41,8 @@ class LCDD extends Sprite {
   int overScanSize = 2;
   int overScanAlpha = 50;
   boolean overScanOn = false;
+  // Background
+  boolean eraseBackground = true;
   
   // Custom LCDDInput instance
   LCDDInput sourceInput;
@@ -123,8 +125,8 @@ class LCDD extends Sprite {
     if (sourceInput != null && sourceInput.isEnabled()) {
       sourceInput.update();
       backBuffer.beginDraw();
-      if (backgroundOn) {
-        backBuffer.background(bgColor);
+      if (eraseBackground) {
+        backBuffer.background(blackDD);
       }
       sourceInput.render(backBuffer);
       backBuffer.endDraw();   
@@ -209,7 +211,7 @@ class LCDD extends Sprite {
         
         boolean lerped = false;
         if (brightness(pixelColor) > 145) {
-          pixelColor = neonDD;
+          pixelColor = palette.get("lightGreen");
           lerped = true;
         }
         

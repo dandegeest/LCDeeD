@@ -8,8 +8,8 @@ class InnerDD {
   
   void spawn(int numP) {
     color[] colors = new color[2];
-    colors[0] = neonDD;
-    colors[1] = yellowDD;
+    colors[0] = palette.get("lightGreen");
+    colors[1] = palette.get("darkGreen");
     
     curlSpan = int(random(50, 100));
     particles.clear();
